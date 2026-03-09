@@ -9,7 +9,7 @@ const db = knex({
         max: 10,
     },
     // Log queries en desarrollo
-    debug: process.env.NODE_ENV === 'development',
+    debug: false
 })
 
 module.exports = db

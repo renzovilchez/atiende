@@ -1,8 +1,9 @@
 @baseUrl = http://localhost:4000
 @contentType = application/json
 
-# Pega aquí el accessToken después de hacer login
-@accessToken =
+@accessToken = 
+
+### ─── AUTH ────────────────────────────────────────────
 
 ### Login — admin Clínica San Marcos
 POST {{baseUrl}}/api/auth/login
@@ -31,7 +32,25 @@ Content-Type: {{contentType}}
   "password": "password123"
 }
 
-### Login — admin Clínica Vita (tenant diferente)
+### Login — recepcionista
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "recepcion@sanmarcos.com",
+  "password": "password123"
+}
+
+### Login — paciente
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "paciente1@gmail.com",
+  "password": "password123"
+}
+
+### Login — admin Clínica Vita
 POST {{baseUrl}}/api/auth/login
 Content-Type: {{contentType}}
 
@@ -52,20 +71,9 @@ POST {{baseUrl}}/api/auth/logout
 
 ### ─── TENANTS ──────────────────────────────────────────
 
-### Listar tenants (solo super_admin)
+### Listar todos los tenants (solo super_admin)
 GET {{baseUrl}}/api/tenants
 Authorization: Bearer {{accessToken}}
-
-### Crear clínica (super_admin)
-POST {{baseUrl}}/api/tenants
-Authorization: Bearer {{accessToken}}
-Content-Type: {{contentType}}
-
-{
-  "name": "Clínica Nueva",
-  "slug": "clinica-nueva",
-  "city": "Lima"
-}
 
 ### Mi clínica (admin)
 GET {{baseUrl}}/api/tenants/me
@@ -78,13 +86,97 @@ Content-Type: {{contentType}}
 
 {
   "phone": "044-999999",
-  "city": "Trujillo"
+  "city": "Trujillo",
+  "address": "Av. España 123"
+}
+
+### Crear clínica (solo super_admin)
+POST {{baseUrl}}/api/tenants
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Clínica Nueva",
+  "slug": "clinica-nueva",
+  "ruc": "20111222333",
+  "phone": "044-111111",
+  "city": "Lima"
 }
 
 ### ─── USERS ────────────────────────────────────────────
 
 ### Listar usuarios del tenant
 GET {{baseUrl}}/api/users
+Authorization: Bearer {{accessToken}}
+
+### ─── APPOINTMENTS ─────────────────────────────────────
+
+@doctorId = 
+@patientId = 
+@appointmentId = 
+
+### Disponibilidad de un doctor en una fecha
+GET {{baseUrl}}/api/appointments/availability?doctor_id={{doctorId}}&date=2026-03-11
+Authorization: Bearer {{accessToken}}
+
+### Agendar cita
+POST {{baseUrl}}/api/appointments
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "doctor_id": "{{doctorId}}",
+  "patient_id": "{{patientId}}",
+  "date": "2026-03-10",
+  "notes": "Primera consulta"
+}
+
+### Listar citas del día
+GET {{baseUrl}}/api/appointments?date=2026-03-11
+Authorization: Bearer {{accessToken}}
+
+### Confirmar llegada (recepción)
+PATCH {{baseUrl}}/api/appointments/{{appointmentId}}/confirm
+Authorization: Bearer {{accessToken}}
+
+### Iniciar consulta (doctor)
+PATCH {{baseUrl}}/api/appointments/{{appointmentId}}/start
+Authorization: Bearer {{accessToken}}
+
+### Completar consulta (doctor)
+PATCH {{baseUrl}}/api/appointments/{{appointmentId}}/complete
+Authorization: Bearer {{accessToken}}
+
+### Cancelar cita
+PATCH {{baseUrl}}/api/appointments/{{appointmentId}}/cancel
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "reason": "Paciente no puede asistir"
+}
+
+### Reagendar cita
+PATCH {{baseUrl}}/api/appointments/{{appointmentId}}/reschedule
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "date": "2026-03-12",
+  "reason": "Solicitud del paciente"
+}
+
+### Agregar adicional con trazabilidad (recepción)
+PATCH {{baseUrl}}/api/appointments/{{appointmentId}}/extra
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "extra_service": "Electrocardiograma adicional"
+}
+
+### Historial de cambios de una cita
+GET {{baseUrl}}/api/appointments/{{appointmentId}}/history
 Authorization: Bearer {{accessToken}}
 
 ### ─── HEALTH ───────────────────────────────────────────
