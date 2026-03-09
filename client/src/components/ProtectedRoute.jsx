@@ -1,7 +1,14 @@
 import { Navigate } from 'react-router-dom'
 import useAuthStore from '../store/auth.store'
 
-// roles: array de roles permitidos. Si está vacío, solo requiere estar autenticado.
+const DEFAULT_ROUTE = {
+    patient: '/mis-citas',
+    doctor: '/medico/cola',
+    receptionist: '/recepcion',
+    admin: '/recepcion',
+    super_admin: '/admin/clinicas',
+}
+
 export default function ProtectedRoute({ children, roles = [] }) {
     const { user, isLoading } = useAuthStore()
 
@@ -13,8 +20,12 @@ export default function ProtectedRoute({ children, roles = [] }) {
         )
     }
 
-    if (!user) {
-        return <Navigate to="/login" replace />
+    if (!user) return <Navigate to="/login" replace />
+
+    // Redirect raíz según rol
+    if (window.location.pathname === '/') {
+        const dest = DEFAULT_ROUTE[user.role] || '/recepcion'
+        return <Navigate to={dest} replace />
     }
 
     if (roles.length > 0 && !roles.includes(user.role)) {
