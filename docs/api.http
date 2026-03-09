@@ -1,0 +1,73 @@
+@baseUrl = http://localhost:4000
+@contentType = application/json
+
+# Pega aquí el accessToken después de hacer login
+@accessToken =
+### ─── AUTH ────────────────────────────────────────────
+
+### Login — admin Clínica San Marcos
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@sanmarcos.com",
+  "password": "password123"
+}
+
+### Login — super admin
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "super@atiende.com",
+  "password": "password123"
+}
+
+### Login — doctor
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "dr.garcia@sanmarcos.com",
+  "password": "password123"
+}
+
+### Login — admin Clínica Vita (tenant diferente)
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@vita.com",
+  "password": "password123"
+}
+
+### Me — quién soy
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{accessToken}}
+
+### Refresh token
+POST {{baseUrl}}/api/auth/refresh
+
+### Logout
+POST {{baseUrl}}/api/auth/logout
+
+### ─── TENANTS ──────────────────────────────────────────
+
+### Listar tenants (solo super_admin)
+GET {{baseUrl}}/api/tenants
+Authorization: Bearer {{accessToken}}
+
+### Mi clínica (admin)
+GET {{baseUrl}}/api/tenants/me
+Authorization: Bearer {{accessToken}}
+
+### ─── USERS ────────────────────────────────────────────
+
+### Listar usuarios del tenant
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{accessToken}}
+
+### ─── HEALTH ───────────────────────────────────────────
+
+### Health check
+GET {{baseUrl}}/health

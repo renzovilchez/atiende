@@ -1,0 +1,35 @@
+# ============================================================
+# ATIENDE — .gitignore raíz
+# Cada servicio (server/, client/, ai/) tiene el suyo propio
+# ============================================================
+
+# Entorno — nunca subir .env reales
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker — volúmenes locales generados por docker-compose
+postgres_data/
+redis_data/
+
+# Logs sueltos en raíz
+*.log
+
+# Red de seguridad global (por si algo se instala en raíz por error)
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+dist/
+build/
