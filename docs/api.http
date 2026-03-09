@@ -2,8 +2,7 @@
 @contentType = application/json
 
 # Pega aquí el accessToken después de hacer login
-@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZTI5YTBlOS05MDc0LTQ2NTAtOTBhNi1iNjY1YjAzZmU2MzgiLCJlbWFpbCI6ImFkbWluQHZpdGEuY29tIiwicm9sZSI6ImFkbWluIiwidGVuYW50SWQiOiIyZGM5NDYzOS1lYmY0LTRkZDItOWI0Zi1kYjU5YjU5MDQwYzEiLCJpYXQiOjE3NzMwOTE3NjMsImV4cCI6MTc3MzA5MjY2M30.bJPdLHsAaVH7w3iKBUyANR6VJXglnAXGzcKRaT4p14Q
-### ─── AUTH ────────────────────────────────────────────
+@accessToken =
 
 ### Login — admin Clínica San Marcos
 POST {{baseUrl}}/api/auth/login
