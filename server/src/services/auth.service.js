@@ -1,8 +1,8 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const { query } = require('../db/pool');
-const { AppError } = require('../middleware/error.middleware');
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+const crypto = require('crypto')
+const db = require('../db/knex')
+const { AppError } = require('../middleware/error.middleware')
 
 function generateTokens(user) {
   const payload = {
@@ -10,43 +10,40 @@ function generateTokens(user) {
     email: user.email,
     role: user.role,
     tenantId: user.tenant_id || null,
-  };
+  }
 
   const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || '15m',
-  });
+  })
 
-  const refreshToken = crypto.randomBytes(64).toString('hex');
+  const refreshToken = crypto.randomBytes(64).toString('hex')
 
-  return { accessToken, refreshToken };
+  return { accessToken, refreshToken }
 }
 
 async function login(email, password) {
-  const { rows } = await query(
-    `SELECT u.*, t.name as tenant_name, t.slug as tenant_slug
-     FROM users u
-     LEFT JOIN tenants t ON t.id = u.tenant_id
-     WHERE u.email = $1 AND u.is_active = TRUE`,
-    [email.toLowerCase()]
-  );
+  const user = await db('users as u')
+    .leftJoin('tenants as t', 't.id', 'u.tenant_id')
+    .where('u.email', email.toLowerCase())
+    .where('u.is_active', true)
+    .select('u.*', 't.name as tenant_name', 't.slug as tenant_slug')
+    .first()
 
-  const user = rows[0];
-  if (!user) throw new AppError('Credenciales inválidas', 401);
+  if (!user) throw new AppError('Credenciales inválidas', 401)
 
-  const valid = await bcrypt.compare(password, user.password_hash);
-  if (!valid) throw new AppError('Credenciales inválidas', 401);
+  const valid = await bcrypt.compare(password, user.password_hash)
+  if (!valid) throw new AppError('Credenciales inválidas', 401)
 
-  const { accessToken, refreshToken } = generateTokens(user);
+  const { accessToken, refreshToken } = generateTokens(user)
 
-  // Guardar refresh token hasheado
-  const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 días
+  const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex')
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
 
-  await query(
-    `INSERT INTO refresh_tokens (user_id, token_hash, expires_at)
-     VALUES ($1, $2, $3)`,
-    [user.id, tokenHash, expiresAt]
-  );
+  await db('refresh_tokens').insert({
+    user_id: user.id,
+    token_hash: tokenHash,
+    expires_at: expiresAt,
+  })
 
   return {
     accessToken,
@@ -61,43 +58,43 @@ async function login(email, password) {
       tenantName: user.tenant_name,
       tenantSlug: user.tenant_slug,
     },
-  };
+  }
 }
 
 async function refreshAccessToken(refreshToken) {
-  const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+  const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex')
 
-  const { rows } = await query(
-    `SELECT rt.*, u.id as user_id, u.email, u.role, u.tenant_id, u.is_active
-     FROM refresh_tokens rt
-     JOIN users u ON u.id = rt.user_id
-     WHERE rt.token_hash = $1 AND rt.revoked_at IS NULL AND rt.expires_at > NOW()`,
-    [tokenHash]
-  );
+  const row = await db('refresh_tokens as rt')
+    .join('users as u', 'u.id', 'rt.user_id')
+    .where('rt.token_hash', tokenHash)
+    .whereNull('rt.revoked_at')
+    .where('rt.expires_at', '>', db.fn.now())
+    .select('rt.*', 'u.id as user_id', 'u.email', 'u.role', 'u.tenant_id', 'u.is_active')
+    .first()
 
-  if (!rows[0]) throw new AppError('Refresh token inválido o expirado', 401);
-  if (!rows[0].is_active) throw new AppError('Usuario inactivo', 401);
+  if (!row) throw new AppError('Refresh token inválido o expirado', 401)
+  if (!row.is_active) throw new AppError('Usuario inactivo', 401)
 
-  const user = rows[0];
-  const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
+  const { accessToken, refreshToken: newRefreshToken } = generateTokens(row)
 
-  // Rotar el refresh token
-  await query('UPDATE refresh_tokens SET revoked_at = NOW() WHERE token_hash = $1', [tokenHash]);
+  await db('refresh_tokens').where('token_hash', tokenHash).update({ revoked_at: db.fn.now() })
 
-  const newHash = crypto.createHash('sha256').update(newRefreshToken).digest('hex');
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  await query(
-    `INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)`,
-    [user.user_id, newHash, expiresAt]
-  );
+  const newHash = crypto.createHash('sha256').update(newRefreshToken).digest('hex')
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
 
-  return { accessToken, refreshToken: newRefreshToken };
+  await db('refresh_tokens').insert({
+    user_id: row.user_id,
+    token_hash: newHash,
+    expires_at: expiresAt,
+  })
+
+  return { accessToken, refreshToken: newRefreshToken }
 }
 
 async function logout(refreshToken) {
-  if (!refreshToken) return;
-  const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
-  await query('UPDATE refresh_tokens SET revoked_at = NOW() WHERE token_hash = $1', [tokenHash]);
+  if (!refreshToken) return
+  const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex')
+  await db('refresh_tokens').where('token_hash', tokenHash).update({ revoked_at: db.fn.now() })
 }
 
-module.exports = { login, refreshAccessToken, logout };
+module.exports = { login, refreshAccessToken, logout }
