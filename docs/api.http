@@ -1,7 +1,7 @@
 @baseUrl = http://localhost:4000
 @contentType = application/json
 
-@accessToken = 
+@accessToken =
 
 ### ─── AUTH ────────────────────────────────────────────
 
@@ -109,13 +109,127 @@ Content-Type: {{contentType}}
 GET {{baseUrl}}/api/users
 Authorization: Bearer {{accessToken}}
 
-### ─── APPOINTMENTS ─────────────────────────────────────
+### ─── SPECIALTIES ──────────────────────────────────────
 
-@doctorId = 
-@patientId = 
-@appointmentId = 
+@specialtyId =
+
+### Listar especialidades
+GET {{baseUrl}}/api/specialties
+Authorization: Bearer {{accessToken}}
+
+### Ver especialidad
+GET {{baseUrl}}/api/specialties/{{specialtyId}}
+Authorization: Bearer {{accessToken}}
+
+### Doctores de una especialidad
+GET {{baseUrl}}/api/specialties/{{specialtyId}}/doctors
+Authorization: Bearer {{accessToken}}
+
+### Crear especialidad (admin)
+POST {{baseUrl}}/api/specialties
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Cardiología",
+  "description": "Enfermedades del corazón",
+  "duration_minutes": 30
+}
+
+### Editar especialidad (admin)
+PATCH {{baseUrl}}/api/specialties/{{specialtyId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "duration_minutes": 35
+}
+
+### ─── DOCTORS ───────────────────────────────────────────
+
+@doctorProfileId =
+
+### Listar doctores del tenant
+GET {{baseUrl}}/api/doctors
+Authorization: Bearer {{accessToken}}
+
+### Ver doctor
+GET {{baseUrl}}/api/doctors/{{doctorProfileId}}
+Authorization: Bearer {{accessToken}}
 
 ### Disponibilidad de un doctor en una fecha
+GET {{baseUrl}}/api/doctors/{{doctorProfileId}}/availability?date=2026-03-11
+Authorization: Bearer {{accessToken}}
+
+### Turnos semanales de un doctor
+GET {{baseUrl}}/api/doctors/{{doctorProfileId}}/schedules
+Authorization: Bearer {{accessToken}}
+
+### ─── SCHEDULES ─────────────────────────────────────────
+
+@scheduleId =
+
+### Turnos de un doctor
+GET {{baseUrl}}/api/schedules?doctor_id={{doctorProfileId}}
+Authorization: Bearer {{accessToken}}
+
+### Crear turno (admin/recepción)
+POST {{baseUrl}}/api/schedules
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "doctor_id": "{{doctorProfileId}}",
+  "day_of_week": 1,
+  "start_time": "08:00",
+  "end_time": "13:00",
+  "max_patients": 15
+}
+
+### Editar turno
+PATCH {{baseUrl}}/api/schedules/{{scheduleId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "max_patients": 10
+}
+
+### Ver excepciones de un turno
+GET {{baseUrl}}/api/schedules/{{scheduleId}}/overrides
+Authorization: Bearer {{accessToken}}
+
+### Bloquear un día
+POST {{baseUrl}}/api/schedules/{{scheduleId}}/overrides
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "date": "2026-03-18",
+  "is_blocked": true,
+  "reason": "Doctor de vacaciones"
+}
+
+### Cambiar horario un día
+POST {{baseUrl}}/api/schedules/{{scheduleId}}/overrides
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "date": "2026-03-25",
+  "start_time": "10:00",
+  "end_time": "13:00",
+  "max_patients": 8,
+  "reason": "Turno reducido"
+}
+
+### ─── APPOINTMENTS ─────────────────────────────────────
+
+@doctorId =
+@patientId =
+@appointmentId =
+
+### Disponibilidad (vía appointments)
 GET {{baseUrl}}/api/appointments/availability?doctor_id={{doctorId}}&date=2026-03-11
 Authorization: Bearer {{accessToken}}
 
@@ -127,7 +241,7 @@ Content-Type: {{contentType}}
 {
   "doctor_id": "{{doctorId}}",
   "patient_id": "{{patientId}}",
-  "date": "2026-03-10",
+  "date": "2026-03-11",
   "notes": "Primera consulta"
 }
 
@@ -162,7 +276,7 @@ Authorization: Bearer {{accessToken}}
 Content-Type: {{contentType}}
 
 {
-  "date": "2026-03-12",
+  "date": "2026-03-13",
   "reason": "Solicitud del paciente"
 }
 

@@ -37,6 +37,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tenants', tenantRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/appointments', require('./routes/appointment.routes'))
+app.use('/api/doctors', require('./routes/doctor.routes'))
+app.use('/api/specialties', require('./routes/specialty.routes'))
+app.use('/api/schedules', require('./routes/schedule.routes'))
 
 // Error handler global (siempre al final)
 app.use(errorHandler);
