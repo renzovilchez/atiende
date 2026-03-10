@@ -11,7 +11,7 @@ async function getByDoctor(req, res, next) {
 
 async function create(req, res, next) {
     try {
-        const schedule = await scheduleService.create(req.tenantId, req.body, req.user.sub)
+        const schedule = await scheduleService.create(req.tenantId, req.body, req.user.id)
         res.status(201).json({ success: true, data: schedule })
     } catch (err) { next(err) }
 }
@@ -25,7 +25,7 @@ async function update(req, res, next) {
 
 async function createOverride(req, res, next) {
     try {
-        const override = await scheduleService.createOverride(req.tenantId, req.params.id, req.body, req.user.sub)
+        const override = await scheduleService.createOverride(req.tenantId, req.params.id, req.body, req.user.id)
         res.status(201).json({ success: true, data: override })
     } catch (err) { next(err) }
 }

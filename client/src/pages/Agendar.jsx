@@ -96,7 +96,7 @@ function StepEspecialidad({ onSelect }) {
 }
 
 // ─── Step 2: Doctor y fecha ────────────────────────────────────────────────
-function StepDoctorFecha({ specialty, onSelect, onBack }) {
+function StepDoctorFecha({ specialty, onSelect, onBack, isPatient }) {
     const [selectedDoctor, setSelectedDoctor] = useState(null)
     const [date, setDate] = useState(addDays(today(), 1))
 
@@ -199,11 +199,16 @@ function StepDoctorFecha({ specialty, onSelect, onBack }) {
                                             {availability.remaining} cupos disponibles · {availability.start_time?.slice(0, 5)} – {availability.end_time?.slice(0, 5)}
                                         </span>
                                     </div>
-                                ) : (
+                                ) : isPatient ? (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px' }}>
                                         <span style={{ color: '#dc2626', fontSize: '16px' }}>✕</span>
-                                        <span style={{ fontSize: '13px', color: '#dc2626', fontWeight: 500 }}>
-                                            {availability.reason || 'Sin cupos disponibles'}
+                                        <span style={{ fontSize: '13px', color: '#dc2626', fontWeight: 500 }}>Sin cupos disponibles</span>
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '8px' }}>
+                                        <span style={{ fontSize: '16px' }}>⚠️</span>
+                                        <span style={{ fontSize: '13px', color: '#c2410c', fontWeight: 500 }}>
+                                            Cupo lleno — se agendará como paciente adicional
                                         </span>
                                     </div>
                                 )
@@ -220,12 +225,13 @@ function StepDoctorFecha({ specialty, onSelect, onBack }) {
                 </button>
                 <button
                     onClick={() => onSelect({ doctor: selectedDoctor, date })}
-                    disabled={!selectedDoctor || !availability?.available}
+                    disabled={!selectedDoctor || (isPatient && !availability?.available)}
                     style={{
                         padding: '10px 24px', border: 'none', borderRadius: '8px',
-                        background: selectedDoctor && availability?.available ? '#2563eb' : '#e2e8f0',
-                        color: selectedDoctor && availability?.available ? '#fff' : '#94a3b8',
-                        fontSize: '14px', fontWeight: 500, cursor: selectedDoctor && availability?.available ? 'pointer' : 'not-allowed',
+                        background: (selectedDoctor && (!isPatient || availability?.available)) ? '#2563eb' : '#e2e8f0',
+                        color: (selectedDoctor && (!isPatient || availability?.available)) ? '#fff' : '#94a3b8',
+                        fontSize: '14px', fontWeight: 500,
+                        cursor: (selectedDoctor && (!isPatient || availability?.available)) ? 'pointer' : 'not-allowed',
                     }}
                 >
                     Continuar →
@@ -392,6 +398,7 @@ export default function Agendar() {
             {step === 2 && (
                 <StepDoctorFecha
                     specialty={specialty}
+                    isPatient={isPatient}
                     onBack={() => setStep(1)}
                     onSelect={({ doctor: d, date: dt }) => { setDoctor(d); setDate(dt); setStep(3) }}
                 />

@@ -28,18 +28,17 @@ function validateFutureDate(date) {
 
 // ─── AGENDAR ───────────────────────────────────────────────────────────────
 // Usa FOR UPDATE para evitar race conditions en cupos
-async function book(tenantId, data, createdBy) {
+async function book(tenantId, data, createdBy, createdByRole) {
     const validated = bookSchema.parse(data)
     validateFutureDate(validated.date)
 
     const repo = new AppointmentRepository(tenantId)
 
     return db.transaction(async (trx) => {
-        // Bloquear filas del doctor en esta fecha para evitar doble reserva
         await trx.raw(
             `SELECT id FROM appointments
-       WHERE tenant_id = ? AND doctor_id = ? AND date = ?
-       FOR UPDATE`,
+             WHERE tenant_id = ? AND doctor_id = ? AND date = ?
+             FOR UPDATE`,
             [tenantId, validated.doctor_id, validated.date]
         )
 
@@ -47,11 +46,12 @@ async function book(tenantId, data, createdBy) {
         if (!schedule) throw new AppError('El doctor no tiene turno en esa fecha', 400)
 
         const count = await repo.countAppointments(validated.doctor_id, validated.date)
-        if (count >= schedule.max_patients) {
+        const isFull = count >= schedule.max_patients
+
+        if (isFull && createdByRole === 'patient') {
             throw new AppError(`No hay cupos disponibles. Máximo: ${schedule.max_patients}`, 409)
         }
 
-        // Verificar que el paciente no tenga ya una cita con este doctor ese día
         const existing = await trx('appointments')
             .where({
                 tenant_id: tenantId,
@@ -77,6 +77,7 @@ async function book(tenantId, data, createdBy) {
                 queue_position: queuePosition,
                 notes: validated.notes,
                 created_by: createdBy,
+                is_extra: isFull,
             })
             .returning('*')
 
@@ -242,24 +243,6 @@ async function reschedule(tenantId, appointmentId, data, changedBy) {
     })
 }
 
-// ─── ADICIONAL CON TRAZABILIDAD ────────────────────────────────────────────
-async function authorizeExtra(tenantId, appointmentId, data, authorizedBy) {
-    const validated = extraSchema.parse(data)
-    const repo = new AppointmentRepository(tenantId)
-    const appointment = await repo.findById(appointmentId)
-
-    if (!appointment) throw new AppError('Cita no encontrada', 404)
-    if (!['confirmed', 'in_progress'].includes(appointment.status)) {
-        throw new AppError('Solo se pueden agregar adicionales a citas confirmadas o en progreso', 400)
-    }
-
-    return repo.update(appointmentId, {
-        extra_service: validated.extra_service,
-        extra_authorized_by: authorizedBy,
-        extra_authorized_at: db.fn.now(),
-    })
-}
-
 // ─── LISTAR CITAS DEL DÍA ─────────────────────────────────────────────────
 async function listByDate(tenantId, date, doctorId = null) {
     const repo = new AppointmentRepository(tenantId)
@@ -311,4 +294,4 @@ async function listByPatient(tenantId, patientId) {
     return repo.findByPatient(patientId)
 }
 
-module.exports = { book, confirm, startProgress, complete, cancel, reschedule, authorizeExtra, listByDate, getHistory, getAvailability, listByPatient }
+module.exports = { book, confirm, startProgress, complete, cancel, reschedule, listByDate, getHistory, getAvailability, listByPatient }

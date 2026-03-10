@@ -1,54 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '../api/axios'
 import StatusBadge from '../components/StatusBadge'
 
 function today() {
     return new Date().toISOString().split('T')[0]
-}
-
-function formatTime(iso) {
-    if (!iso) return '—'
-    return new Date(iso).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })
-}
-
-// ─── Modal adicional ───────────────────────────────────────────────────────
-function ExtraModal({ appointment, onClose, onSave }) {
-    const [value, setValue] = useState(appointment.extra_service || '')
-    const [saving, setSaving] = useState(false)
-
-    async function handleSave() {
-        if (!value.trim()) return
-        setSaving(true)
-        await onSave(value)
-        setSaving(false)
-    }
-
-    return (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-            <div style={{ background: '#fff', borderRadius: '12px', padding: '28px', width: '420px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
-                <h3 style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>Adicional</h3>
-                <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#64748b' }}>
-                    {appointment.patient_first_name} {appointment.patient_last_name}
-                </p>
-                <textarea
-                    value={value}
-                    onChange={e => setValue(e.target.value)}
-                    placeholder="Describe el servicio adicional..."
-                    rows={3}
-                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '14px', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
-                />
-                <div style={{ display: 'flex', gap: '8px', marginTop: '16px', justifyContent: 'flex-end' }}>
-                    <button onClick={onClose} style={{ padding: '8px 16px', border: '1px solid #e2e8f0', borderRadius: '6px', background: '#fff', fontSize: '13px', cursor: 'pointer', color: '#64748b' }}>
-                        Cancelar
-                    </button>
-                    <button onClick={handleSave} disabled={saving || !value.trim()} style={{ padding: '8px 16px', border: 'none', borderRadius: '6px', background: '#2563eb', color: '#fff', fontSize: '13px', cursor: 'pointer', fontWeight: 500, opacity: saving ? 0.7 : 1 }}>
-                        {saving ? 'Guardando...' : 'Guardar'}
-                    </button>
-                </div>
-            </div>
-        </div>
-    )
 }
 
 // ─── Modal cancelar ────────────────────────────────────────────────────────
@@ -90,10 +46,9 @@ function CancelModal({ appointment, onClose, onConfirm }) {
 }
 
 // ─── Fila de cita ──────────────────────────────────────────────────────────
-function AppointmentRow({ appt, onConfirm, onCancel, onExtra, onHistory }) {
+function AppointmentRow({ appt, onConfirm, onCancel, onHistory }) {
     const canConfirm = appt.status === 'scheduled'
     const canCancel = !['completed', 'cancelled'].includes(appt.status)
-    const canExtra = ['confirmed', 'in_progress'].includes(appt.status)
 
     return (
         <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
@@ -117,7 +72,7 @@ function AppointmentRow({ appt, onConfirm, onCancel, onExtra, onHistory }) {
             </td>
             <td style={{ padding: '14px 16px' }}>
                 <StatusBadge status={appt.status} />
-                {appt.extra_service && (
+                {appt.is_extra && (
                     <div style={{ fontSize: '11px', color: '#f97316', marginTop: '4px', fontWeight: 500 }}>+ Adicional</div>
                 )}
             </td>
@@ -126,11 +81,6 @@ function AppointmentRow({ appt, onConfirm, onCancel, onExtra, onHistory }) {
                     {canConfirm && (
                         <button onClick={() => onConfirm(appt)} style={btnStyle('#16a34a')}>
                             ✓ Llegó
-                        </button>
-                    )}
-                    {canExtra && (
-                        <button onClick={() => onExtra(appt)} style={btnStyle('#f97316')}>
-                            + Extra
                         </button>
                     )}
                     {canCancel && (
@@ -212,7 +162,6 @@ function HistoryModal({ appointment, onClose }) {
 // ─── Página principal ──────────────────────────────────────────────────────
 export default function Recepcion() {
     const [date, setDate] = useState(today())
-    const [extraModal, setExtraModal] = useState(null)
     const [cancelModal, setCancelModal] = useState(null)
     const [historyModal, setHistoryModal] = useState(null)
     const queryClient = useQueryClient()
@@ -232,11 +181,6 @@ export default function Recepcion() {
     const cancelMutation = useMutation({
         mutationFn: ({ id, reason }) => api.patch(`/appointments/${id}/cancel`, { reason }),
         onSuccess: () => { setCancelModal(null); invalidate() },
-    })
-
-    const extraMutation = useMutation({
-        mutationFn: ({ id, extra_service }) => api.patch(`/appointments/${id}/extra`, { extra_service }),
-        onSuccess: () => { setExtraModal(null); invalidate() },
     })
 
     const appointments = data || []
@@ -310,7 +254,6 @@ export default function Recepcion() {
                                     appt={appt}
                                     onConfirm={(a) => confirmMutation.mutate(a.id)}
                                     onCancel={(a) => setCancelModal(a)}
-                                    onExtra={(a) => setExtraModal(a)}
                                     onHistory={(a) => setHistoryModal(a)}
                                 />
                             ))}
@@ -320,13 +263,6 @@ export default function Recepcion() {
             </div>
 
             {/* Modals */}
-            {extraModal && (
-                <ExtraModal
-                    appointment={extraModal}
-                    onClose={() => setExtraModal(null)}
-                    onSave={(extra_service) => extraMutation.mutateAsync({ id: extraModal.id, extra_service })}
-                />
-            )}
             {cancelModal && (
                 <CancelModal
                     appointment={cancelModal}

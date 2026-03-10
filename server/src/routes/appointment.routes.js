@@ -36,7 +36,4 @@ router.patch('/:id/cancel', authenticate, authorize(...staffRoles, 'patient'), c
 // Reagendar — staff
 router.patch('/:id/reschedule', authenticate, authorize(...staffRoles), c.reschedule)
 
-// Adicional con trazabilidad — staff
-router.patch('/:id/extra', authenticate, authorize(...staffRoles), c.authorizeExtra)
-
 module.exports = router
