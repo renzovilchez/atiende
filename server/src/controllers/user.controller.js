@@ -3,7 +3,8 @@ const userService = require('../services/user.service')
 async function getAll(req, res, next) {
     try {
         const isSuperAdmin = req.user.role === 'super_admin'
-        const users = await userService.getAll(req.tenantId, isSuperAdmin)
+        const role = req.query.role || null
+        const users = await userService.getAll(req.tenantId, isSuperAdmin, role)
         res.json({ success: true, data: users })
     } catch (err) { next(err) }
 }

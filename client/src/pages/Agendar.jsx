@@ -242,8 +242,8 @@ function StepConfirmar({ specialty, doctor, date, onBack, onConfirm, isPatient, 
     const [selectedPatientId, setSelectedPatientId] = useState(patientId || user?.id)
 
     const { data: patients = [] } = useQuery({
-        queryKey: ['users'],
-        queryFn: () => api.get('/users').then(r => r.data.data.filter(u => u.role === 'patient')),
+        queryKey: ['patients'],
+        queryFn: () => api.get('/users?role=patient').then(r => r.data.data),
         enabled: !isPatient,
     })
 
