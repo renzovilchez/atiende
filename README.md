@@ -2,11 +2,13 @@
 
 Plataforma web multitenant de gestión de citas médicas para clínicas privadas.
 
-## Estado actual: Fase 1 — Base multitenant + Auth
+## Estado actual: Fase 2 — Agendamiento
 
 ## Requisitos
 
 - Docker + Docker Compose
+- Node.js + npm
+- Git
 
 ## Setup
 
@@ -33,8 +35,11 @@ curl http://localhost:4000/health
 | admin@sanmarcos.com | admin | Clínica San Marcos |
 | recepcion@sanmarcos.com | receptionist | Clínica San Marcos |
 | dr.garcia@sanmarcos.com | doctor | Clínica San Marcos |
+| dr.perez@sanmarcos.com | doctor | Clínica San Marcos |
 | paciente1@gmail.com | patient | Clínica San Marcos |
 | admin@vita.com | admin | Centro Médico Vita |
+| recepcion@vita.com | receptionist | Centro Médico Vita |
+| paciente2@gmail.com | patient | Centro Médico Vita |
 
 ## Estructura
 
@@ -60,8 +65,8 @@ atiende/
 
 | Fase | Semanas | Estado |
 |------|---------|--------|
-| 1 — Base multitenant + Auth | S1-S3 | 🔄 En progreso |
-| 2 — Agendamiento | S4-S6 | ⏳ Pendiente |
+| 1 — Base multitenant + Auth | S1-S3 | ✅ Completada |
+| 2 — Agendamiento | S4-S6 | 🔄 En progreso |
 | 3 — Tiempo real (Socket.io) | S7-S9 | ⏳ Pendiente |
 | 4 — Canvas interactivo | S10-S12 | ⏳ Pendiente |
 | 5 — Microservicio IA | S13-S16 | ⏳ Pendiente |
