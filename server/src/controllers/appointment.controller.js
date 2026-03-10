@@ -77,4 +77,13 @@ async function getAvailability(req, res, next) {
     } catch (err) { next(err) }
 }
 
-module.exports = { book, confirm, startProgress, complete, cancel, reschedule, authorizeExtra, listByDate, getHistory, getAvailability }
+async function listMine(req, res, next) {
+    try {
+        const data = await appointmentService.listByPatient(req.tenantId, req.user.id)
+        res.json({ success: true, data })
+    } catch (err) {
+        next(err)
+    }
+}
+
+module.exports = { book, confirm, startProgress, complete, cancel, reschedule, authorizeExtra, listByDate, getHistory, getAvailability, listMine }

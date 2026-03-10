@@ -19,7 +19,10 @@ function authenticate(req, res, next) {
       email: payload.email,
       role: payload.role,
       tenantId: payload.tenantId || null,
-    };
+      firstName: payload.firstName || null,
+      lastName: payload.lastName || null,
+      tenantName: payload.tenantName || null,
+    }
     req.tenantId = payload.tenantId || null;
     next();
   } catch (err) {

@@ -4,6 +4,7 @@ import Layout from '../layouts'
 import Login from '../pages/Login'
 import Recepcion from '../pages/Recepcion'
 import Agendar from '../pages/Agendar'
+import MisCitas from '../pages/MisCitas'
 
 const Placeholder = ({ title }) => (
     <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
@@ -23,7 +24,7 @@ const router = createBrowserRouter([
     // ─── PACIENTE ────────────────────────────────────────────
     {
         path: '/mis-citas',
-        element: <ProtectedRoute roles={['patient']}><WithLayout><Placeholder title="Mis citas" /></WithLayout></ProtectedRoute>,
+        element: <ProtectedRoute roles={['patient']}><WithLayout><MisCitas /></WithLayout></ProtectedRoute>,
     },
     {
         path: '/agendar',

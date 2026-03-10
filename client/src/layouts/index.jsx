@@ -3,7 +3,9 @@ import StaffLayout from './StaffLayout'
 import PatientLayout from './PatientLayout'
 
 export default function Layout({ children }) {
-    const { user } = useAuthStore()
+    const { user, isLoading } = useAuthStore()
+
+    if (isLoading) return null
 
     if (user?.role === 'patient') {
         return <PatientLayout>{children}</PatientLayout>

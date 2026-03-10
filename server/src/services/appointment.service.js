@@ -305,4 +305,10 @@ async function getAvailability(tenantId, doctorId, date) {
     }
 }
 
-module.exports = { book, confirm, startProgress, complete, cancel, reschedule, authorizeExtra, listByDate, getHistory, getAvailability }
+// ─── LISTAR CITAS POR PACIENTE ─────────────────────────────────────────────
+async function listByPatient(tenantId, patientId) {
+    const repo = new AppointmentRepository(tenantId)
+    return repo.findByPatient(patientId)
+}
+
+module.exports = { book, confirm, startProgress, complete, cancel, reschedule, authorizeExtra, listByDate, getHistory, getAvailability, listByPatient }

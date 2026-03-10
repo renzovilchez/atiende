@@ -19,8 +19,7 @@ api.interceptors.response.use(
     async (error) => {
         const original = error.config
 
-        // Si la request tiene el flag _isRefresh o _retry, no interceptar
-        if (original._isRefresh || original._retry) {
+        if (original._retry || original.url?.includes('/auth/refresh')) {
             return Promise.reject(error)
         }
 
@@ -44,7 +43,7 @@ api.interceptors.response.use(
             const { data } = await axios.post(
                 `${import.meta.env.VITE_API_URL || 'http://localhost:4000/api'}/auth/refresh`,
                 {},
-                { withCredentials: true, _isRefresh: true } // flag para no interceptar
+                { withCredentials: true, _isRefresh: true }
             )
             const newToken = data.data.accessToken
             window.__accessToken = newToken

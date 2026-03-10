@@ -1,37 +1,39 @@
 import { create } from 'zustand'
 import api from '../api/axios'
 
+let sessionChecked = false
+
 const useAuthStore = create((set) => ({
     user: null,
-    isLoading: true, // true al inicio mientras verifica sesión existente
+    isLoading: true,
 
-    // Login — guarda el accessToken en memoria y el user en el store
     login: async (email, password) => {
         const { data } = await api.post('/auth/login', { email, password })
         window.__accessToken = data.data.accessToken
         set({ user: data.data.user })
     },
 
-    // Logout — revoca el refresh token y limpia el estado
     logout: async () => {
         try {
             await api.post('/auth/logout')
         } finally {
+            sessionChecked = false
             window.__accessToken = null
             set({ user: null })
             window.location.href = '/login'
         }
     },
 
-    // Verifica si hay sesión activa al cargar la app (usa el refresh token en cookie)
     checkSession: async () => {
+        if (sessionChecked) return
+        sessionChecked = true
+
         try {
             const { data } = await api.post('/auth/refresh')
             window.__accessToken = data.data.accessToken
             const me = await api.get('/auth/me')
             set({ user: me.data.data.user })
-        } catch {
-            // No hay sesión válida — estado limpio
+        } catch (err) {
             window.__accessToken = null
             set({ user: null })
         } finally {

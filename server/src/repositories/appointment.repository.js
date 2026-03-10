@@ -51,6 +51,7 @@ class AppointmentRepository {
         return (max || 0) + 1
     }
 
+    // Crea una cita
     async create(data) {
         const [row] = await db('appointments')
             .insert({ ...data, tenant_id: this.tenantId })
@@ -58,12 +59,14 @@ class AppointmentRepository {
         return row
     }
 
+    // Obtiene una cita por su id
     async findById(id) {
         return db('appointments')
             .where({ id, tenant_id: this.tenantId })
             .first()
     }
 
+    // Obtiene todas las citas de un doctor en una fecha
     async findByDate(date, filters = {}) {
         return db('appointments as a')
             .join('doctors as d', 'd.id', 'a.doctor_id')
@@ -86,6 +89,7 @@ class AppointmentRepository {
             .orderBy('a.queue_position')
     }
 
+    // Actualiza una cita
     async update(id, data) {
         const [row] = await db('appointments')
             .where({ id, tenant_id: this.tenantId })
@@ -94,6 +98,7 @@ class AppointmentRepository {
         return row
     }
 
+    // Registra un evento en la cola
     async logEvent({ appointmentId, fromStatus, toStatus, changedBy, reason, metadata }) {
         await db('queue_events').insert({
             tenant_id: this.tenantId,
@@ -104,6 +109,24 @@ class AppointmentRepository {
             reason,
             metadata: metadata ? JSON.stringify(metadata) : null,
         })
+    }
+
+    // Obtiene todas las citas de un paciente
+    async findByPatient(patientId) {
+        return db('appointments as a')
+            .join('doctors as d', 'a.doctor_id', 'd.id')
+            .join('users as du', 'd.user_id', 'du.id')
+            .join('specialties as s', 'd.specialty_id', 's.id')
+            .leftJoin('rooms as r', 'a.room_id', 'r.id')
+            .where({ 'a.tenant_id': this.tenantId, 'a.patient_id': patientId })
+            .select(
+                'a.*',
+                'du.first_name as doctor_first_name',
+                'du.last_name as doctor_last_name',
+                's.name as specialty_name',
+                'r.name as room_name',
+            )
+            .orderBy('a.date', 'desc')
     }
 }
 

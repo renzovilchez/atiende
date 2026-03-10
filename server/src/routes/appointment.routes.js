@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { authenticate, authorize } = require('../middleware/auth.middleware')
+const { authenticate, authorize, requireTenant } = require('../middleware/auth.middleware')
 const c = require('../controllers/appointment.controller')
 
 const staffRoles = ['admin', 'receptionist', 'super_admin']
@@ -14,6 +14,9 @@ router.get('/', authenticate, authorize(...staffRoles, ...doctorRoles), c.listBy
 
 // Agendar — staff o el propio paciente
 router.post('/', authenticate, authorize(...staffRoles, 'patient'), c.book)
+
+// Historial de citas de un paciente
+router.get('/mine', authenticate, requireTenant, c.listMine)
 
 // Historial de una cita
 router.get('/:id/history', authenticate, authorize(...staffRoles, ...doctorRoles), c.getHistory)
