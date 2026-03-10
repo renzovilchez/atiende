@@ -2,6 +2,8 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import ProtectedRoute from '../components/ProtectedRoute'
 import Layout from '../layouts'
 import Login from '../pages/Login'
+import Recepcion from '../pages/Recepcion'
+import Agendar from '../pages/Agendar'
 
 const Placeholder = ({ title }) => (
     <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
@@ -25,13 +27,17 @@ const router = createBrowserRouter([
     },
     {
         path: '/agendar',
-        element: <ProtectedRoute roles={['patient', 'admin', 'receptionist', 'super_admin']}><WithLayout><Placeholder title="Agendar cita" /></WithLayout></ProtectedRoute>,
+        element: <ProtectedRoute roles={['patient', 'admin', 'receptionist', 'super_admin']}>
+            <WithLayout><Agendar /></WithLayout>
+        </ProtectedRoute>,
     },
 
     // ─── RECEPCIÓN ───────────────────────────────────────────
     {
         path: '/recepcion',
-        element: <ProtectedRoute roles={['receptionist', 'admin', 'super_admin']}><WithLayout><Placeholder title="Citas del día" /></WithLayout></ProtectedRoute>,
+        element: <ProtectedRoute roles={['receptionist', 'admin', 'super_admin']}>
+            <WithLayout><Recepcion /></WithLayout>
+        </ProtectedRoute>,
     },
 
     // ─── DOCTOR ──────────────────────────────────────────────

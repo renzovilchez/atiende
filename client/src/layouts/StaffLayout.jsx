@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import useAuthStore from '../store/auth.store'
+import LiveClock from '../components/LiveClock'
 
 const NAV_ITEMS = {
     receptionist: [
@@ -159,9 +160,7 @@ export default function StaffLayout({ children }) {
                     justifyContent: 'space-between',
                     flexShrink: 0,
                 }}>
-                    <div style={{ fontSize: '13px', color: '#94a3b8' }}>
-                        {new Date().toLocaleDateString('es-PE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                    </div>
+                    <LiveClock />
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{
                             width: '32px', height: '32px', borderRadius: '50%',
