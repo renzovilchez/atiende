@@ -33,3 +33,28 @@ __pycache__/
 .venv/
 dist/
 build/
+
+# ============================================================
+# Testing & Coverage
+# ============================================================
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Jest cache
+.jest-cache/
+jest_0/
+
+# Vitest cache
+.vitest-cache/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
