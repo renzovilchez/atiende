@@ -50,12 +50,24 @@ atiende/
 │   │   ├── controllers/
 │   │   ├── services/
 │   │   ├── middleware/
+│   │   ├── repositories/
 │   │   ├── routes/
 │   │   ├── db/
 │   │   └── utils/
 │   ├── migrations/
 │   └── .env.example
-├── client/         React + Vite           (Fase 1 — pendiente)
+├── client/         React + Vite
+│   ├── public/
+│   ├── src/
+│   │   ├── api/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   ├── layouts/
+│   │   ├── pages/
+│   │   ├── router/
+│   │   └── store/          Zustand
+│   ├── Dockerfile.dev
+│   └── .env.example
 ├── ai/             FastAPI + scikit-learn  (Fase 5 — pendiente)
 ├── infra/          nginx, producción       (Fase 6 — pendiente)
 └── docker-compose.yml
