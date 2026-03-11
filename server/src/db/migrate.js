@@ -4,16 +4,6 @@ const db = require('./knex')
 
 const MIGRATIONS_DIR = path.join(__dirname, '../../migrations')
 
-function splitStatements(sql) {
-  // Eliminar comentarios de línea
-  const noComments = sql.replace(/--[^\n]*/g, '')
-  // Split por ; seguido de whitespace o fin de string
-  return noComments
-    .split(/;[ \t]*(\r?\n|$)/)
-    .map(s => s.trim())
-    .filter(s => s.length > 0)
-}
-
 async function migrate() {
   await db.raw(`
     CREATE TABLE IF NOT EXISTS _migrations (
@@ -40,12 +30,8 @@ async function migrate() {
     const sql = fs.readFileSync(path.join(MIGRATIONS_DIR, file), 'utf8')
     console.log(`[migrate] Aplicando ${file}...`)
 
-    const statements = splitStatements(sql)
-
     await db.transaction(async (trx) => {
-      for (const statement of statements) {
-        await trx.raw(statement)
-      }
+      await trx.raw(sql)
       await trx('_migrations').insert({ filename: file })
     })
 
