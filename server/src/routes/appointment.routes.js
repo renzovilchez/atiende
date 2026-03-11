@@ -16,7 +16,7 @@ router.get('/', authenticate, authorize(...staffRoles, ...doctorRoles), c.listBy
 router.post('/', authenticate, authorize(...staffRoles, 'patient'), c.book)
 
 // Historial de citas de un paciente
-router.get('/mine', authenticate, requireTenant, c.listMine)
+router.get('/mine', authenticate, authorize('patient'), requireTenant, c.listMine)
 
 // Historial de una cita
 router.get('/:id/history', authenticate, authorize(...staffRoles, ...doctorRoles), c.getHistory)

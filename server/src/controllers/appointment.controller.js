@@ -77,6 +77,13 @@ async function getAvailability(req, res, next) {
 
 async function listMine(req, res, next) {
     try {
+        if (req.user.role !== 'patient') {
+            return res.status(403).json({
+                success: false,
+                error: 'Acceso denegado. Solo pacientes pueden ver su historial.'
+            });
+        }
+
         const data = await appointmentService.listByPatient(req.tenantId, req.user.id)
         res.json({ success: true, data })
     } catch (err) {
