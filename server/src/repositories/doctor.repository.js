@@ -6,10 +6,9 @@ class DoctorRepository {
     }
 
     findAll() {
-        return db('doctors as d')
+        const query = db('doctors as d')
             .join('users as u', 'u.id', 'd.user_id')
             .leftJoin('specialties as s', 's.id', 'd.specialty_id')
-            .where('d.tenant_id', this.tenantId)
             .where('d.is_active', true)
             .select(
                 'd.id',
@@ -23,15 +22,21 @@ class DoctorRepository {
                 'u.email',
                 'u.phone'
             )
-            .orderBy('u.last_name')
+            .orderBy('u.last_name');
+
+        // Solo filtrar por tenant si hay tenantId
+        if (this.tenantId) {
+            query.where('d.tenant_id', this.tenantId);
+        }
+
+        return query;
     }
 
     findById(id) {
-        return db('doctors as d')
+        const query = db('doctors as d')
             .join('users as u', 'u.id', 'd.user_id')
             .leftJoin('specialties as s', 's.id', 'd.specialty_id')
             .where('d.id', id)
-            .where('d.tenant_id', this.tenantId)
             .select(
                 'd.id',
                 'd.license_number',
@@ -43,15 +48,20 @@ class DoctorRepository {
                 'u.last_name',
                 'u.email',
                 'u.phone'
-            )
-            .first()
+            );
+
+        // Solo filtrar por tenant si hay tenantId
+        if (this.tenantId) {
+            query.where('d.tenant_id', this.tenantId);
+        }
+
+        return query.first();
     }
 
     findBySpecialty(specialtyId) {
-        return db('doctors as d')
+        const query = db('doctors as d')
             .join('users as u', 'u.id', 'd.user_id')
             .leftJoin('specialties as s', 's.id', 'd.specialty_id')
-            .where('d.tenant_id', this.tenantId)
             .where('d.specialty_id', specialtyId)
             .where('d.is_active', true)
             .select(
@@ -66,13 +76,27 @@ class DoctorRepository {
                 'u.email',
                 'u.phone'
             )
-            .orderBy('u.last_name')
+            .orderBy('u.last_name');
+
+        // Solo filtrar por tenant si hay tenantId
+        if (this.tenantId) {
+            query.where('d.tenant_id', this.tenantId);
+        }
+
+        return query;
     }
 
     findSchedules(doctorId) {
-        return db('schedules')
-            .where({ doctor_id: doctorId, tenant_id: this.tenantId, is_active: true })
-            .orderBy('day_of_week')
+        const query = db('schedules')
+            .where({ doctor_id: doctorId, is_active: true })
+            .orderBy('day_of_week');
+
+        // Solo filtrar por tenant si hay tenantId
+        if (this.tenantId) {
+            query.where('tenant_id', this.tenantId);
+        }
+
+        return query;
     }
 }
 
