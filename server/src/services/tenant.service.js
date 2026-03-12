@@ -46,4 +46,11 @@ async function update(id, data) {
     return tenantRepository.update(id, validated)
 }
 
-module.exports = { getAll, getById, create, update }
+async function remove(id) {
+    const tenant = await tenantRepository.findById(id)
+    if (!tenant) throw new AppError('Clínica no encontrada', 404)
+
+    return tenantRepository.delete(id)
+}
+
+module.exports = { getAll, getById, create, update, remove }
