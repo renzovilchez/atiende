@@ -34,6 +34,17 @@ async function book(tenantId, data, createdBy, createdByRole) {
     const validated = bookSchema.parse(data)
     validateFutureDate(validated.date)
 
+    const doctor = await db('doctors')
+        .where({
+            id: validated.doctor_id,
+            tenant_id: tenantId
+        })
+        .first();
+
+    if (!doctor) {
+        throw new AppError('Doctor no encontrado o no pertenece a esta clínica', 404);
+    }
+
     const repo = new AppointmentRepository(tenantId)
 
     return db.transaction(async (trx) => {
@@ -226,6 +237,19 @@ async function reschedule(tenantId, appointmentId, data, changedBy) {
     }
 
     const doctorId = validated.doctor_id || appointment.doctor_id
+
+    if (validated.doctor_id) {
+        const doctor = await db('doctors')
+            .where({
+                id: validated.doctor_id,
+                tenant_id: tenantId
+            })
+            .first();
+
+        if (!doctor) {
+            throw new AppError('Doctor no encontrado o no pertenece a esta clínica', 404);
+        }
+    }
 
     return db.transaction(async (trx) => {
         await trx.raw(
