@@ -48,10 +48,28 @@ function authorize(...roles) {
 
 /**
  * Asegura que el recurso solicitado pertenece al tenant del usuario.
- * Para super_admin, pasa siempre.
+ * Para super_admin:
+ *   - Si viene header X-Tenant-ID, usa ese tenant
+ *   - En GET, si no viene header, pasa sin tenant (para listar todos)
+ *   - En otros métodos (POST, PATCH, DELETE), requiere header
  */
 function requireTenant(req, res, next) {
-  if (req.user?.role === 'super_admin') return next();
+  // Si es super_admin, puede venir el tenant en header
+  if (req.user?.role === 'super_admin') {
+    const headerTenant = req.headers['x-tenant-id'];
+    if (headerTenant) {
+      req.tenantId = headerTenant;
+      return next();
+    }
+    // Para GET, si no hay header, pasa sin tenant (para listar todos)
+    if (req.method === 'GET') {
+      req.tenantId = null;
+      return next();
+    }
+    return next(new AppError('Super admin debe especificar tenant_id en header X-Tenant-ID', 400));
+  }
+
+  // Para otros roles, usar su tenantId del token
   if (!req.tenantId) return next(new AppError('Tenant requerido', 403));
   next();
 }
