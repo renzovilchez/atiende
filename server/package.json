@@ -8,14 +8,11 @@
     "start": "node src/index.js",
     "migrate": "node src/db/migrate.js",
     "seed": "node src/db/seed.js",
-    "test": "jest --runInBand --forceExit",
-    "test:docker": "docker-compose exec server sh -c \"NODE_ENV=test DATABASE_URL=postgresql://atiende:atiende_secret@postgres:5432/atiende_test npx jest --runInBand --forceExit\""
+    "test": "docker-compose exec server sh -c \"NODE_ENV=test DATABASE_URL=postgresql://atiende:atiende_secret@postgres:5432/atiende_test npx jest --runInBand --forceExit\""
   },
   "jest": {
     "testEnvironment": "node",
-    "testMatch": [
-      "**/tests/**/*.test.js"
-    ],
+    "testMatch": null,
     "setupFilesAfterEnv": [
       "./tests/setup.js"
     ],
@@ -25,7 +22,8 @@
     "coveragePathIgnorePatterns": [
       "/node_modules/",
       "/tests/"
-    ]
+    ],
+    "testRegex": "(/tests/.*\\.test\\.js)$"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
