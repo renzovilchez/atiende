@@ -6,15 +6,25 @@ class SpecialtyRepository {
     }
 
     findAll() {
-        return db('specialties')
-            .where({ tenant_id: this.tenantId, is_active: true })
-            .orderBy('name')
+        const query = db('specialties').where({ is_active: true });
+
+        // Si tenantId es null (super_admin viendo todos), no filtrar por tenant
+        if (this.tenantId) {
+            query.where({ tenant_id: this.tenantId });
+        }
+
+        return query.orderBy('name');
     }
 
     findById(id) {
-        return db('specialties')
-            .where({ id, tenant_id: this.tenantId })
-            .first()
+        const query = db('specialties').where({ id });
+
+        // Si tenantId es null, no filtrar por tenant
+        if (this.tenantId) {
+            query.where({ tenant_id: this.tenantId });
+        }
+
+        return query.first();
     }
 }
 
