@@ -6,8 +6,8 @@ const createSchema = z.object({
     doctor_id: z.string().uuid(),
     room_id: z.string().uuid().optional(),
     day_of_week: z.number().int().min(0).max(6),
-    start_time: z.string().regex(/^\d{2}:\d{2}$/),
-    end_time: z.string().regex(/^\d{2}:\d{2}$/),
+    start_time: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Hora inválida (formato HH:MM)'),
+    end_time: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Hora inválida (formato HH:MM)'),
     max_patients: z.number().int().min(1).max(100).optional(),
 })
 
@@ -31,7 +31,12 @@ async function getByDoctor(tenantId, doctorId) {
 async function create(tenantId, data, createdBy) {
     const validated = createSchema.parse(data)
     const repo = new ScheduleRepository(tenantId)
-    return repo.create(validated)
+    // CORREGIDO: Agregar tenant_id a los datos
+    const dataWithTenant = {
+        ...validated,
+        tenant_id: tenantId
+    }
+    return repo.create(dataWithTenant)
 }
 
 async function update(tenantId, id, data) {
