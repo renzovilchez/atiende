@@ -3,6 +3,8 @@ const db = require('../db/knex')
 const AppointmentRepository = require('../repositories/appointment.repository')
 const { AppError } = require('../middleware/error.middleware')
 
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 const bookSchema = z.object({
     doctor_id: z.string().uuid(),
     patient_id: z.string().uuid(),
@@ -95,6 +97,11 @@ async function book(tenantId, data, createdBy, createdByRole) {
 
 // ─── CONFIRMAR LLEGADA ─────────────────────────────────────────────────────
 async function confirm(tenantId, appointmentId, changedBy) {
+
+    if (!uuidRegex.test(appointmentId)) {
+        throw new AppError('ID de cita inválido', 400);
+    }
+
     const repo = new AppointmentRepository(tenantId)
     const appointment = await repo.findById(appointmentId)
 
@@ -116,6 +123,11 @@ async function confirm(tenantId, appointmentId, changedBy) {
 
 // ─── INICIAR CONSULTA ──────────────────────────────────────────────────────
 async function startProgress(tenantId, appointmentId, changedBy) {
+
+    if (!uuidRegex.test(appointmentId)) {
+        throw new AppError('ID de cita inválido', 400);
+    }
+
     const repo = new AppointmentRepository(tenantId)
     const appointment = await repo.findById(appointmentId)
 
@@ -137,6 +149,11 @@ async function startProgress(tenantId, appointmentId, changedBy) {
 
 // ─── COMPLETAR ─────────────────────────────────────────────────────────────
 async function complete(tenantId, appointmentId, changedBy) {
+
+    if (!uuidRegex.test(appointmentId)) {
+        throw new AppError('ID de cita inválido', 400);
+    }
+
     const repo = new AppointmentRepository(tenantId)
     const appointment = await repo.findById(appointmentId)
 
@@ -157,16 +174,27 @@ async function complete(tenantId, appointmentId, changedBy) {
 }
 
 // ─── CANCELAR ──────────────────────────────────────────────────────────────
-async function cancel(tenantId, appointmentId, changedBy, reason) {
+async function cancel(tenantId, appointmentId, changedBy, changedByRole, reason) {
+
+    if (!uuidRegex.test(appointmentId)) {
+        throw new AppError('ID de cita inválido', 400);
+    }
+
     const repo = new AppointmentRepository(tenantId)
     const appointment = await repo.findById(appointmentId)
 
     if (!appointment) throw new AppError('Cita no encontrada', 404)
-    if (['completed', 'cancelled'].includes(appointment.status)) {
+
+    if (changedByRole === 'patient' && appointment.patient_id !== changedBy) {
+        throw new AppError('No puedes cancelar una cita que no te pertenece', 403)
+    }
+
+    if (['completed', 'cancelled', 'in_progress'].includes(appointment.status)) {
         throw new AppError(`No se puede cancelar una cita en estado: ${appointment.status}`, 400)
     }
 
     const updated = await repo.update(appointmentId, { status: 'cancelled' })
+
     await repo.logEvent({
         appointmentId,
         fromStatus: appointment.status,
@@ -180,14 +208,20 @@ async function cancel(tenantId, appointmentId, changedBy, reason) {
 
 // ─── REAGENDAR ─────────────────────────────────────────────────────────────
 async function reschedule(tenantId, appointmentId, data, changedBy) {
+
+    if (!uuidRegex.test(appointmentId)) {
+        throw new AppError('ID de cita inválido', 400);
+    }
+
     const validated = rescheduleSchema.parse(data)
+
     validateFutureDate(validated.date)
 
     const repo = new AppointmentRepository(tenantId)
     const appointment = await repo.findById(appointmentId)
 
     if (!appointment) throw new AppError('Cita no encontrada', 404)
-    if (['completed', 'cancelled'].includes(appointment.status)) {
+    if (['completed', 'cancelled', 'in_progress'].includes(appointment.status)) {
         throw new AppError(`No se puede reagendar una cita en estado: ${appointment.status}`, 400)
     }
 
@@ -252,6 +286,11 @@ async function listByDate(tenantId, date, doctorId = null) {
 
 // ─── HISTORIAL DE UNA CITA ─────────────────────────────────────────────────
 async function getHistory(tenantId, appointmentId) {
+
+    if (!uuidRegex.test(appointmentId)) {
+        throw new AppError('ID de cita inválido', 400);
+    }
+
     const repo = new AppointmentRepository(tenantId)
     const appointment = await repo.findById(appointmentId)
     if (!appointment) throw new AppError('Cita no encontrada', 404)
