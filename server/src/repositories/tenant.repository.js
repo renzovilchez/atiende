@@ -30,6 +30,11 @@ class TenantRepository extends BaseRepository {
             .returning('*')
         return row
     }
+
+    async delete(id) {
+        await db('tenants').where({ id }).delete()
+        return true
+    }
 }
 
 module.exports = new TenantRepository()
