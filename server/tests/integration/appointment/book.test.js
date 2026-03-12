@@ -235,36 +235,24 @@ describe('POST /api/appointments', () => {
         expect(failures.length).toBe(1);
     });
 
-    it.skip('debería respetar aislamiento multitenant: no permitir agendar con paciente de otro tenant', async () => {
-        // Este test revela un bug real, lo dejamos skip por ahora
+    it('debería respetar aislamiento multitenant: no permitir agendar con paciente de otro tenant', async () => {
+        // Crear otro tenant
         const [otherTenant] = await db('tenants').insert({
             name: 'Otra Clínica',
             slug: 'otra-clinica',
         }).returning('*');
 
-        const hashOtherPatient = await bcrypt.hash('other123', 10);
-        const [otherPatient] = await db('users').insert({
-            tenant_id: otherTenant.id,
-            role: 'patient',
-            email: 'otherpatient@test.com',
-            password_hash: hashOtherPatient,
-            first_name: 'Otro',
-            last_name: 'Paciente',
-            is_active: true,
-        }).returning('*');
-
-        const loginOther = await request(app)
-            .post('/api/auth/login')
-            .send({ email: 'otherpatient@test.com', password: 'other123' });
-        const otherToken = loginOther.body.data.accessToken;
+        // Crear paciente en otro tenant (usando el helper en lugar de bcrypt manual)
+        const otherPatient = await createPatientWithToken(otherTenant.id, 'otherpatient@test.com', 'other123');
 
         const payload = { doctor_id: doctorId, patient_id: otherPatient.id, date: testDate };
         const res = await request(app)
             .post('/api/appointments')
             .send(payload)
-            .set('Authorization', `Bearer ${otherToken}`);
+            .set('Authorization', `Bearer ${otherPatient.token}`);
 
-        expect(res.status).toBe(400);
-        expect(res.body.error).toMatch(/El doctor no tiene turno en esa fecha/);
+        // Ahora esperamos 404 porque el doctor no pertenece al tenant del paciente
+        expect(res.status).toBe(404);
+        expect(res.body.error).toMatch(/Doctor no encontrado o no pertenece a esta clínica/);
     });
 });
