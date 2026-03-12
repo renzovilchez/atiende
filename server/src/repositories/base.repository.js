@@ -8,7 +8,10 @@ class BaseRepository {
 
     query() {
         const q = db(this.table)
-        if (this.tenantId) q.where({ tenant_id: this.tenantId })
+        // Solo filtrar por tenant si hay tenantId
+        if (this.tenantId) {
+            q.where({ tenant_id: this.tenantId })
+        }
         return q
     }
 
@@ -17,7 +20,12 @@ class BaseRepository {
     }
 
     async findAll(filters = {}) {
-        return this.query().where(filters)
+        const q = this.query();
+        // Aplicar filtros adicionales
+        Object.keys(filters).forEach(key => {
+            q.where(key, filters[key]);
+        });
+        return q;
     }
 
     async findById(id) {
