@@ -36,7 +36,13 @@ async function complete(req, res, next) {
 async function cancel(req, res, next) {
     try {
         const { reason } = req.body
-        const appointment = await appointmentService.cancel(req.tenantId, req.params.id, req.user.id, reason)
+        const appointment = await appointmentService.cancel(
+            req.tenantId,
+            req.params.id,
+            req.user.id,
+            req.user.role,
+            reason
+        )
         res.json({ success: true, data: appointment })
     } catch (err) { next(err) }
 }
