@@ -5,8 +5,9 @@ const c = require('../controllers/doctor.controller')
 const tenantRoles = ['admin', 'receptionist', 'doctor', 'patient']
 const staffRoles = ['admin', 'receptionist']
 
-router.get('/', authenticate, authorize(...tenantRoles), requireTenant, c.getAll)
 router.get('/me', authenticate, authorize('doctor'), requireTenant, c.getMe)
+
+router.get('/', authenticate, authorize(...tenantRoles), requireTenant, c.getAll)
 router.get('/:id', authenticate, authorize(...tenantRoles), requireTenant, c.getById)
 router.get('/:id/availability', authenticate, authorize(...tenantRoles), requireTenant, c.getAvailability)
 router.get('/:id/schedules', authenticate, authorize(...staffRoles), requireTenant, c.getSchedules)
