@@ -3,10 +3,10 @@ import useAuthStore from '../store/auth.store'
 
 const DEFAULT_ROUTE = {
     patient: '/mis-citas',
-    doctor: '/medico/cola',
+    doctor: '/doctor',
     receptionist: '/recepcion',
-    admin: '/recepcion',
-    super_admin: '/admin/clinicas',
+    admin: '/admin',
+    super_admin: '/super-admin',
 }
 
 export default function ProtectedRoute({ children, roles = [] }) {
