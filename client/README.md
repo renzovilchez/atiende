@@ -65,7 +65,7 @@ cp .env.example .env
 | `/` | todos los autenticados |
 | `/admin` | admin, super_admin |
 | `/recepcion` | receptionist |
-| `/medico` | doctor |
+| `/doctor` | doctor |
 
 ## Notas de desarrollo
 
