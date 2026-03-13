@@ -6,25 +6,30 @@ class SpecialtyRepository {
     }
 
     findAll() {
-        const query = db('specialties').where({ is_active: true });
-
-        // Si tenantId es null (super_admin viendo todos), no filtrar por tenant
-        if (this.tenantId) {
-            query.where({ tenant_id: this.tenantId });
-        }
-
-        return query.orderBy('name');
+        const q = db('specialties').where({ is_active: true })
+        if (this.tenantId) q.where({ tenant_id: this.tenantId })
+        return q.orderBy('name')
     }
 
     findById(id) {
-        const query = db('specialties').where({ id });
+        const q = db('specialties').where({ id })
+        if (this.tenantId) q.where({ tenant_id: this.tenantId })
+        return q.first()
+    }
 
-        // Si tenantId es null, no filtrar por tenant
-        if (this.tenantId) {
-            query.where({ tenant_id: this.tenantId });
-        }
+    async create(data) {
+        const [row] = await db('specialties')
+            .insert({ ...data, tenant_id: this.tenantId })
+            .returning('*')
+        return row
+    }
 
-        return query.first();
+    async update(id, data) {
+        const [row] = await db('specialties')
+            .where({ id, tenant_id: this.tenantId })
+            .update({ ...data, updated_at: db.fn.now() })
+            .returning('*')
+        return row
     }
 }
 

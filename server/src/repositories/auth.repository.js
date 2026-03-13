@@ -27,7 +27,6 @@ async function findRefreshToken(refreshToken) {
         .where('rt.expires_at', '>', db.fn.now())
         .select(
             'rt.id as token_id',
-            'rt.user_id',
             'u.id as user_id',
             'u.email',
             'u.role',
