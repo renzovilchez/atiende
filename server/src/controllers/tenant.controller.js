@@ -1,6 +1,23 @@
+const { z } = require('zod')
 const tenantService = require('../services/tenant.service')
 
-// GET /api/tenants — solo super_admin
+const createSchema = z.object({
+    name: z.string().min(2).max(255),
+    slug: z.string().min(2).max(100).regex(/^[a-z0-9-]+$/, 'Solo minúsculas, números y guiones'),
+    ruc: z.string().max(20).optional(),
+    phone: z.string().max(30).optional(),
+    city: z.string().max(100).optional(),
+    address: z.string().max(500).optional(),
+})
+
+const updateSchema = z.object({
+    name: z.string().min(2).max(255).optional(),
+    phone: z.string().max(30).optional(),
+    address: z.string().max(500).optional(),
+    city: z.string().max(100).optional(),
+    ruc: z.string().max(20).optional(),
+}).strict()
+
 async function getAll(req, res, next) {
     try {
         const tenants = await tenantService.getAll()
@@ -8,7 +25,6 @@ async function getAll(req, res, next) {
     } catch (err) { next(err) }
 }
 
-// GET /api/tenants/:id — solo super_admin
 async function getById(req, res, next) {
     try {
         const tenant = await tenantService.getById(req.params.id)
@@ -16,23 +32,6 @@ async function getById(req, res, next) {
     } catch (err) { next(err) }
 }
 
-// PATCH /api/tenants/:id - super_admin actualiza cualquier clínica
-async function update(req, res, next) {
-    try {
-        const tenant = await tenantService.update(req.params.id, req.body)
-        res.json({ success: true, data: tenant })
-    } catch (err) { next(err) }
-}
-
-// DELETE /api/tenants/:id - super_admin elimina una clínica (opcional)
-async function remove(req, res, next) {
-    try {
-        await tenantService.remove(req.params.id)
-        res.json({ success: true })
-    } catch (err) { next(err) }
-}
-
-// GET /api/tenants/me — admin ve su propia clínica
 async function getMe(req, res, next) {
     try {
         const tenant = await tenantService.getById(req.tenantId)
@@ -40,26 +39,34 @@ async function getMe(req, res, next) {
     } catch (err) { next(err) }
 }
 
-// POST /api/tenants — solo super_admin crea clínicas
 async function create(req, res, next) {
     try {
-        const tenant = await tenantService.create(req.body)
+        const data = createSchema.parse(req.body)
+        const tenant = await tenantService.create(data)
         res.status(201).json({ success: true, data: tenant })
     } catch (err) { next(err) }
 }
 
-// PATCH /api/tenants/me — admin edita su propia clínica
+async function update(req, res, next) {
+    try {
+        const data = updateSchema.parse(req.body)
+        const tenant = await tenantService.update(req.params.id, data)
+        res.json({ success: true, data: tenant })
+    } catch (err) { next(err) }
+}
+
 async function updateMe(req, res, next) {
     try {
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({
-                success: false,
-                error: 'Solo administradores pueden editar su clínica'
-            });
-        }
-
-        const tenant = await tenantService.update(req.tenantId, req.body)
+        const data = updateSchema.parse(req.body)
+        const tenant = await tenantService.update(req.tenantId, data)
         res.json({ success: true, data: tenant })
+    } catch (err) { next(err) }
+}
+
+async function remove(req, res, next) {
+    try {
+        await tenantService.remove(req.params.id)
+        res.json({ success: true })
     } catch (err) { next(err) }
 }
 
