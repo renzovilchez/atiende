@@ -67,4 +67,11 @@ async function deactivate(req, res, next) {
     } catch (err) { next(err) }
 }
 
-module.exports = { getAll, getById, getAvailability, getSchedules, create, update, deactivate }
+async function getMe(req, res, next) {
+    try {
+        const doctor = await doctorService.getMe(req.tenantId, req.user.id)
+        res.json({ success: true, data: doctor })
+    } catch (err) { next(err) }
+}
+
+module.exports = { getAll, getById, getAvailability, getSchedules, create, update, deactivate, getMe }

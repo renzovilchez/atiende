@@ -82,4 +82,10 @@ async function deactivate(tenantId, id) {
     return doctor
 }
 
-module.exports = { getAll, getById, getBySpecialty, getAvailability, getSchedules, create, update, deactivate }
+async function getMe(tenantId, userId) {
+    const doctor = await new DoctorRepository(tenantId).findByUserId(userId)
+    if (!doctor) throw new AppError('Perfil de doctor no encontrado', 404)
+    return doctor
+}
+
+module.exports = { getAll, getById, getBySpecialty, getAvailability, getSchedules, create, update, deactivate, getMe }

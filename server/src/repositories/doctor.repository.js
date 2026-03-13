@@ -46,6 +46,12 @@ class DoctorRepository {
         return q
     }
 
+    findByUserId(userId) {
+        return this._baseQuery()
+            .where('d.user_id', userId)
+            .first()
+    }
+
     // ── CRUD ──────────────────────────────────────────────────────────────
 
     async create(data) {
