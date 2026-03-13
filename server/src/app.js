@@ -27,6 +27,7 @@ app.use('/api/appointments', require('./routes/appointment.routes'))
 app.use('/api/doctors', require('./routes/doctor.routes'))
 app.use('/api/specialties', require('./routes/specialty.routes'))
 app.use('/api/schedules', require('./routes/schedule.routes'))
+app.use('/api/patients', require('./routes/patient.routes'))
 
 app.use(errorHandler);
 
