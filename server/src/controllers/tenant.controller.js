@@ -12,6 +12,7 @@ const createSchema = z.object({
 
 const updateSchema = z.object({
     name: z.string().min(2).max(255).optional(),
+    slug: z.string().min(2).max(100).regex(/^[a-z0-9-]+$/, 'Solo minúsculas, números y guiones').optional(),
     phone: z.string().max(30).optional(),
     address: z.string().max(500).optional(),
     city: z.string().max(100).optional(),

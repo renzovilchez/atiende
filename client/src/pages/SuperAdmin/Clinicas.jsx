@@ -3,17 +3,34 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import api from '../../api/axios'
 
+function toSlug(str) {
+    return str
+        .toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-')
+}
+
 function ClinicaModal({ clinica, onClose, onSuccess }) {
     const isEdit = !!clinica
     const [form, setForm] = useState({
         name: clinica?.name || '',
+        slug: clinica?.slug || '',
         ruc: clinica?.ruc || '',
         phone: clinica?.phone || '',
         address: clinica?.address || '',
         city: clinica?.city || '',
     })
     const [error, setError] = useState(null)
-    const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+    const set = (k, v) => {
+        setForm(f => ({
+            ...f,
+            [k]: v,
+            ...(!isEdit && k === 'name' ? { slug: toSlug(v) } : {}),
+        }))
+    }
 
     const mutation = useMutation({
         mutationFn: (data) => isEdit
@@ -38,8 +55,29 @@ function ClinicaModal({ clinica, onClose, onSuccess }) {
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    {/* Nombre */}
+                    <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Nombre *</label>
+                        <input value={form.name} onChange={e => set('name', e.target.value)}
+                            placeholder="Clínica San Juan" required
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
+                    </div>
+
+                    {/* Slug — solo visible al crear, readonly al editar */}
+                    <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">
+                            Slug {!isEdit && <span className="text-gray-400 font-normal">(se genera desde el nombre, editable)</span>}
+                        </label>
+                        <input value={form.slug} onChange={e => set('slug', e.target.value)}
+                            placeholder="clinica-san-juan"
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono focus:border-blue-500 focus:outline-none" />
+                        {isEdit && (
+                            <p className="text-xs text-amber-500 mt-1">⚠ Cambiar el slug puede afectar integraciones existentes</p>
+                        )}
+                    </div>
+
+                    {/* Resto de campos */}
                     {[
-                        { key: 'name', label: 'Nombre *', placeholder: 'Clínica San Juan', required: true },
                         { key: 'ruc', label: 'RUC', placeholder: '20XXXXXXXXX' },
                         { key: 'phone', label: 'Teléfono', placeholder: '01 234 5678' },
                         { key: 'address', label: 'Dirección', placeholder: 'Av. Principal 123' },
@@ -48,7 +86,7 @@ function ClinicaModal({ clinica, onClose, onSuccess }) {
                         <div key={f.key}>
                             <label className="block text-xs font-semibold text-gray-600 mb-1">{f.label}</label>
                             <input value={form[f.key]} onChange={e => set(f.key, e.target.value)}
-                                placeholder={f.placeholder} required={f.required}
+                                placeholder={f.placeholder}
                                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
                         </div>
                     ))}
@@ -137,7 +175,7 @@ export default function SuperAdminClinicas() {
                     <table className="w-full">
                         <thead>
                             <tr className="bg-gray-50 border-b border-gray-200">
-                                {['Clínica', 'RUC', 'Ciudad', 'Teléfono', 'Acciones'].map(h => (
+                                {['Clínica', 'Slug', 'RUC', 'Ciudad', 'Teléfono', 'Acciones'].map(h => (
                                     <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{h}</th>
                                 ))}
                             </tr>
@@ -152,6 +190,9 @@ export default function SuperAdminClinicas() {
                                             </div>
                                             <span className="font-medium text-gray-900">{c.name}</span>
                                         </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="font-mono text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">{c.slug}</span>
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-600">{c.ruc || '—'}</td>
                                     <td className="px-6 py-4 text-sm text-gray-600">{c.city || '—'}</td>
