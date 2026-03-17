@@ -50,6 +50,14 @@ class UserRepository extends BaseRepository {
         return user
     }
 
+    async update(id, data) {
+        const [user] = await this.query()
+            .where({ id })
+            .update({ ...data, updated_at: db.fn.now() })
+            .returning(['id', 'email', 'role', 'first_name', 'last_name', 'phone', 'dni', 'is_active'])
+        return user
+    }
+
     async deactivate(id) {
         const [user] = await this.query()
             .where({ id })

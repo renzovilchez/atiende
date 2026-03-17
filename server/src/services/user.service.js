@@ -37,6 +37,13 @@ async function create(tenantId, data) {
     })
 }
 
+async function update(tenantId, userId, data) {
+    const repo = new UserRepository(tenantId)
+    const user = await repo.findById(userId)
+    if (!user) throw new AppError('Usuario no encontrado', 404)
+    return repo.update(userId, data)
+}
+
 async function deactivate(tenantId, userId) {
     const repo = new UserRepository(tenantId)
     const user = await repo.deactivate(userId)
@@ -44,4 +51,4 @@ async function deactivate(tenantId, userId) {
     return user
 }
 
-module.exports = { getAll, getPatients, getAllPlatform, create, deactivate }
+module.exports = { getAll, getPatients, getAllPlatform, create, update, deactivate }

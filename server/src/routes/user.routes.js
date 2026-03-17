@@ -11,6 +11,9 @@ router.get('/patients', authenticate, authorize('receptionist', 'admin'), requir
 // Admin crea usuarios (doctores, recepcionistas, etc.)
 router.post('/', authenticate, authorize('admin'), requireTenant, c.create)
 
+// Admin actualiza un usuario
+router.patch('/:id', authenticate, authorize('admin'), requireTenant, c.update)
+
 // Admin desactiva un usuario
 router.patch('/:id/deactivate', authenticate, authorize('admin'), requireTenant, c.deactivate)
 

@@ -11,6 +11,14 @@ const createSchema = z.object({
     dni: z.string().optional(),
 })
 
+const updateSchema = z.object({
+    first_name: z.string().min(1).optional(),
+    last_name: z.string().min(1).optional(),
+    email: z.string().email().optional(),
+    phone: z.string().optional(),
+    dni: z.string().optional(),
+})
+
 async function getAll(req, res, next) {
     try {
         const role = req.query.role || null
@@ -41,6 +49,14 @@ async function create(req, res, next) {
     } catch (err) { next(err) }
 }
 
+async function update(req, res, next) {
+    try {
+        const data = updateSchema.parse(req.body)
+        const user = await userService.update(req.tenantId, req.params.id, data)
+        res.json({ success: true, data: user })
+    } catch (err) { next(err) }
+}
+
 async function deactivate(req, res, next) {
     try {
         const user = await userService.deactivate(req.tenantId, req.params.id)
@@ -48,4 +64,4 @@ async function deactivate(req, res, next) {
     } catch (err) { next(err) }
 }
 
-module.exports = { getAll, getPatients, getAllPlatform, create, deactivate }
+module.exports = { getAll, getPatients, getAllPlatform, create, update, deactivate }
