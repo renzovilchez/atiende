@@ -31,4 +31,11 @@ async function getOverrides(tenantId, scheduleId) {
     return repo.findOverrides(scheduleId)
 }
 
-module.exports = { getByDoctor, create, update, createOverride, getOverrides }
+async function remove(tenantId, id) {
+    const repo = new ScheduleRepository(tenantId)
+    const schedule = await repo.findById(id)
+    if (!schedule) throw new AppError('Turno no encontrado', 404)
+    await repo.delete(id)
+}
+
+module.exports = { getByDoctor, create, update, createOverride, getOverrides, remove }

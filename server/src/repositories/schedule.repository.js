@@ -62,6 +62,12 @@ class ScheduleRepository {
         return row
     }
 
+    async delete(id) {
+        await db('schedules')
+            .where({ id, ...(this.tenantId && { tenant_id: this.tenantId }) })
+            .delete()
+    }
+
     findOverrides(scheduleId) {
         const query = db('schedule_overrides')
             .where({ schedule_id: scheduleId })

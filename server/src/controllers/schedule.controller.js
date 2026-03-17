@@ -62,4 +62,11 @@ async function getOverrides(req, res, next) {
     } catch (err) { next(err) }
 }
 
-module.exports = { getByDoctor, create, update, createOverride, getOverrides }
+async function remove(req, res, next) {
+    try {
+        await scheduleService.remove(req.tenantId, req.params.id)
+        res.json({ success: true })
+    } catch (err) { next(err) }
+}
+
+module.exports = { getByDoctor, create, update, createOverride, getOverrides, remove }

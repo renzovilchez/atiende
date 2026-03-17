@@ -9,5 +9,6 @@ router.get('/:id/overrides', authenticate, authorize(...staffRoles), requireTena
 router.post('/', authenticate, authorize(...staffRoles), requireTenant, c.create)
 router.patch('/:id', authenticate, authorize(...staffRoles), requireTenant, c.update)
 router.post('/:id/overrides', authenticate, authorize(...staffRoles), requireTenant, c.createOverride)
+router.delete('/:id', authenticate, authorize('admin'), requireTenant, c.remove)
 
 module.exports = router
