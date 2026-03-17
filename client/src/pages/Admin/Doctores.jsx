@@ -6,7 +6,12 @@ import api from '../../api/axios'
 function DoctorModal({ doctor, specialties, onClose, onSuccess }) {
     const isEdit = !!doctor
     const [form, setForm] = useState({
-        user_id: doctor?.user_id || '',
+        first_name: doctor?.first_name || '',
+        last_name: doctor?.last_name || '',
+        email: doctor?.email || '',
+        password: '',
+        phone: doctor?.phone || '',
+        dni: doctor?.dni || '',
         specialty_id: doctor?.specialty_id || '',
         license_number: doctor?.license_number || '',
         bio: doctor?.bio || '',
@@ -14,33 +19,57 @@ function DoctorModal({ doctor, specialties, onClose, onSuccess }) {
     const [error, setError] = useState(null)
     const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
-    // Para crear: buscar usuarios con rol doctor sin perfil aún
-    const { data: users = [] } = useQuery({
-        queryKey: ['users', 'doctor'],
-        queryFn: () => api.get('/users?role=doctor').then(r => r.data.data),
-        enabled: !isEdit,
-    })
-
     const mutation = useMutation({
-        mutationFn: (data) => isEdit
-            ? api.patch(`/doctors/${doctor.id}`, data)
-            : api.post('/doctors', data),
-        onSuccess: (res) => onSuccess(res.data.data),
+        mutationFn: async (data) => {
+            if (isEdit) {
+                const [, doctorRes] = await Promise.all([
+                    api.patch(`/users/${doctor.user_id}`, {
+                        first_name: data.first_name,
+                        last_name: data.last_name,
+                        email: data.email,
+                        phone: data.phone || null,
+                        dni: data.dni || null,
+                    }),
+                    api.patch(`/doctors/${doctor.id}`, {
+                        specialty_id: data.specialty_id || null,
+                        license_number: data.license_number || null,
+                        bio: data.bio || null,
+                    }),
+                ])
+                return doctorRes.data.data
+            } else {
+                const userRes = await api.post('/users', {
+                    first_name: data.first_name,
+                    last_name: data.last_name,
+                    email: data.email,
+                    password: data.password,
+                    role: 'doctor',
+                    ...(data.phone && { phone: data.phone }),
+                    ...(data.dni && { dni: data.dni }),
+                })
+                const newUser = userRes.data.data
+                const doctorRes = await api.post('/doctors', {
+                    user_id: newUser.id,
+                    specialty_id: data.specialty_id || null,
+                    license_number: data.license_number || null,
+                    bio: data.bio || null,
+                })
+                return doctorRes.data.data
+            }
+        },
+        onSuccess: (res) => onSuccess(res),
         onError: (err) => setError(err.response?.data?.error || 'Error al guardar'),
     })
 
     function handleSubmit(e) {
         e.preventDefault()
         setError(null)
-        const data = isEdit
-            ? { specialty_id: form.specialty_id, license_number: form.license_number, bio: form.bio }
-            : form
-        mutation.mutate(data)
+        mutation.mutate(form)
     }
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
                 <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-gray-900">
                         {isEdit ? 'Editar doctor' : 'Agregar doctor'}
@@ -49,42 +78,87 @@ function DoctorModal({ doctor, specialties, onClose, onSuccess }) {
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    {!isEdit && (
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-600 mb-1">Usuario *</label>
-                            <select value={form.user_id} onChange={e => set('user_id', e.target.value)} required
-                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none">
-                                <option value="">Seleccionar usuario...</option>
-                                {users.map(u => (
-                                    <option key={u.id} value={u.id}>{u.first_name} {u.last_name} — {u.email}</option>
-                                ))}
-                            </select>
+
+                    {/* Datos personales — siempre visible */}
+                    <div>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Datos personales</p>
+                        <div className="space-y-3">
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-600 mb-1">Nombre *</label>
+                                    <input value={form.first_name} onChange={e => set('first_name', e.target.value)} required
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-600 mb-1">Apellido *</label>
+                                    <input value={form.last_name} onChange={e => set('last_name', e.target.value)} required
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-600 mb-1">Email *</label>
+                                <input type="email" value={form.email} onChange={e => set('email', e.target.value)} required
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
+                            </div>
+                            {!isEdit && (
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-600 mb-1">Contraseña *</label>
+                                    <input type="password" value={form.password} onChange={e => set('password', e.target.value)}
+                                        required minLength={8}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
+                                    <p className="text-xs text-gray-400 mt-1">Mínimo 8 caracteres</p>
+                                </div>
+                            )}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-600 mb-1">Teléfono</label>
+                                    <input value={form.phone} onChange={e => set('phone', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-600 mb-1">DNI</label>
+                                    <input value={form.dni} onChange={e => set('dni', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
+                                </div>
+                            </div>
                         </div>
-                    )}
-
-                    <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">Especialidad</label>
-                        <select value={form.specialty_id} onChange={e => set('specialty_id', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none">
-                            <option value="">Sin especialidad</option>
-                            {specialties.map(s => (
-                                <option key={s.id} value={s.id}>{s.name}</option>
-                            ))}
-                        </select>
                     </div>
 
-                    <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">N° de colegiatura (CMP)</label>
-                        <input value={form.license_number} onChange={e => set('license_number', e.target.value)}
-                            placeholder="Ej: 12345"
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
-                    </div>
+                    <div className="border-t border-gray-100" />
 
+                    {/* Datos médicos — siempre visible */}
                     <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">Biografía</label>
-                        <textarea value={form.bio} onChange={e => set('bio', e.target.value)} rows={3}
-                            placeholder="Descripción breve del doctor..."
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none resize-none" />
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Datos médicos</p>
+                        <div className="space-y-3">
+                            <div>
+                                <div className="flex items-center justify-between mb-1">
+                                    <label className="text-xs font-semibold text-gray-600">Especialidad</label>
+                                    <a href="/admin/especialidades" target="_blank"
+                                        className="text-xs text-gray-400 hover:text-blue-600 transition-colors">
+                                        Gestionar especialidades ↗
+                                    </a>
+                                </div>
+                                <select value={form.specialty_id} onChange={e => set('specialty_id', e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none">
+                                    <option value="">Sin especialidad</option>
+                                    {specialties.map(s => (
+                                        <option key={s.id} value={s.id}>{s.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-600 mb-1">N° de colegiatura (CMP)</label>
+                                <input value={form.license_number} onChange={e => set('license_number', e.target.value)}
+                                    placeholder="Ej: 12345"
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-600 mb-1">Biografía</label>
+                                <textarea value={form.bio} onChange={e => set('bio', e.target.value)} rows={3}
+                                    placeholder="Descripción breve del doctor..."
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none resize-none" />
+                            </div>
+                        </div>
                     </div>
 
                     {error && (
@@ -100,7 +174,7 @@ function DoctorModal({ doctor, specialties, onClose, onSuccess }) {
                         </button>
                         <button type="submit" disabled={mutation.isPending}
                             className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-xl text-sm font-semibold">
-                            {mutation.isPending ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Agregar'}
+                            {mutation.isPending ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Agregar doctor'}
                         </button>
                     </div>
                 </form>

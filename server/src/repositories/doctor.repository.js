@@ -13,7 +13,7 @@ class DoctorRepository {
                 'd.id', 'd.license_number', 'd.bio', 'd.is_active',
                 'd.specialty_id', 'd.user_id',
                 's.name as specialty_name', 's.duration_minutes',
-                'u.first_name', 'u.last_name', 'u.email', 'u.phone'
+                'u.first_name', 'u.last_name', 'u.email', 'u.phone', 'u.dni'
             )
         if (this.tenantId) q.where('d.tenant_id', this.tenantId)
         return q

@@ -3,6 +3,9 @@ const AppointmentRepository = require('../repositories/appointment.repository')
 const UserRepository = require('../repositories/user.repository')
 const { AppError } = require('../middleware/error.middleware')
 
+const db = require('../db/knex')
+const bcrypt = require('bcryptjs')
+
 async function getAll(tenantId) {
     return new DoctorRepository(tenantId).findAll()
 }
@@ -48,19 +51,40 @@ async function getSchedules(tenantId, doctorId) {
 }
 
 async function create(tenantId, data) {
-    const userRepo = new UserRepository(tenantId)
+    return db.transaction(async (trx) => {
+        const userRepo = new UserRepository(tenantId)
 
-    // Verificar que el usuario existe y es doctor
-    const user = await userRepo.findById(data.user_id)
-    if (!user) throw new AppError('Usuario no encontrado', 404)
-    if (user.role !== 'doctor') throw new AppError('El usuario no tiene rol de doctor', 400)
+        // Verificar email único
+        const exists = await trx('users').where({ email: data.email.toLowerCase() }).first()
+        if (exists) throw new AppError('Ya existe un usuario con ese email', 409)
 
-    const repo = new DoctorRepository(tenantId)
-    return repo.create({
-        user_id: data.user_id,
-        specialty_id: data.specialty_id || null,
-        license_number: data.license_number || null,
-        bio: data.bio || null,
+        // Crear usuario
+        const password_hash = await bcrypt.hash(data.password, 10)
+        const [user] = await trx('users')
+            .insert({
+                tenant_id: tenantId,
+                role: 'doctor',
+                email: data.email.toLowerCase(),
+                password_hash,
+                first_name: data.first_name,
+                last_name: data.last_name,
+                phone: data.phone || null,
+                dni: data.dni || null,
+            })
+            .returning(['id', 'first_name', 'last_name', 'email'])
+
+        // Crear perfil doctor
+        const [doctor] = await trx('doctors')
+            .insert({
+                tenant_id: tenantId,
+                user_id: user.id,
+                specialty_id: data.specialty_id || null,
+                license_number: data.license_number || null,
+                bio: data.bio || null,
+            })
+            .returning(['id', 'user_id', 'specialty_id', 'license_number', 'bio', 'is_active'])
+
+        return { ...doctor, ...user }
     })
 }
 

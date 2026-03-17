@@ -2,7 +2,12 @@ const { z } = require('zod')
 const doctorService = require('../services/doctor.service')
 
 const createSchema = z.object({
-    user_id: z.string().uuid(),
+    first_name: z.string().min(1),
+    last_name: z.string().min(1),
+    email: z.string().email(),
+    password: z.string().min(8),
+    phone: z.string().optional(),
+    dni: z.string().optional(),
     specialty_id: z.string().uuid().optional(),
     license_number: z.string().optional(),
     bio: z.string().optional(),
