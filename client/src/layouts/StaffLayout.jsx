@@ -74,18 +74,18 @@ const QueueIcon = () => (
 // Configuración de navegación por rol (basada en las rutas del router)
 const NAV_ITEMS = {
     receptionist: [
-        { to: '/recepcion', label: 'Citas del día', icon: CalendarIcon },
+        { to: '/recepcion', label: 'Citas del día', icon: CalendarIcon, end: true },
         { to: '/recepcion/agendar', label: 'Agendar cita', icon: PlusIcon },
         { to: '/recepcion/pacientes', label: 'Pacientes', icon: UsersIcon },
     ],
     doctor: [
-        { to: '/doctor', label: 'Dashboard', icon: DashboardIcon },
+        { to: '/doctor', label: 'Dashboard', icon: DashboardIcon, end: true },
         { to: '/doctor/cola', label: 'Cola de espera', icon: QueueIcon },
         { to: '/doctor/agenda', label: 'Mi agenda', icon: CalendarIcon },
     ],
     admin: [
-        { to: '/admin', label: 'Dashboard', icon: DashboardIcon },
-        { to: '/recepcion', label: 'Citas del día', icon: CalendarIcon },
+        { to: '/admin', label: 'Dashboard', icon: DashboardIcon, end: true },
+        { to: '/recepcion', label: 'Citas del día', icon: CalendarIcon, end: true },
         { to: '/recepcion/agendar', label: 'Agendar cita', icon: PlusIcon },
         { to: '/recepcion/pacientes', label: 'Pacientes', icon: UsersIcon },
         { to: '/admin/doctores', label: 'Doctores', icon: UsersIcon },
@@ -95,7 +95,7 @@ const NAV_ITEMS = {
         { to: '/admin/reportes', label: 'Reportes', icon: ReportsIcon },
     ],
     super_admin: [
-        { to: '/super-admin', label: 'Dashboard', icon: DashboardIcon },
+        { to: '/super-admin', label: 'Dashboard', icon: DashboardIcon, end: true },
         { to: '/super-admin/clinicas', label: 'Clínicas', icon: BuildingIcon },
         { to: '/super-admin/planes', label: 'Planes', icon: SpecialtiesIcon },
         { to: '/super-admin/metricas', label: 'Métricas', icon: ReportsIcon },
@@ -228,12 +228,12 @@ export default function StaffLayout({ children }) {
                     <div className="space-y-1">
                         {navItems.map((item) => {
                             const Icon = item.icon
-                            const isActive = location.pathname === item.to
 
                             return (
                                 <NavLink
                                     key={item.to}
                                     to={item.to}
+                                    end={item.end}
                                     className={({ isActive }) => `
                                         flex items-center rounded-xl transition-all duration-200
                                         ${sidebarOpen ? 'px-4 py-3' : 'px-0 py-3 justify-center'}
@@ -336,7 +336,7 @@ export default function StaffLayout({ children }) {
             </div>
 
             {/* Estilos para animaciones */}
-            <style jsx>{`
+            <style>{`
                 @keyframes fadeIn {
                     from {
                         opacity: 0;
