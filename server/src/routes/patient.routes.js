@@ -18,4 +18,7 @@ router.patch('/:id', authenticate, authorize(...staffRoles), requireTenant, c.up
 router.get('/:id/profile', authenticate, authorize(...staffRoles), requireTenant, c.getProfile)
 router.patch('/:id/profile', authenticate, authorize(...staffRoles), requireTenant, c.updateProfile)
 
+// Solo admin puede eliminar
+router.delete('/:id', authenticate, authorize('admin'), requireTenant, c.remove)
+
 module.exports = router

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import api from '../../api/axios'
+import useAuthStore from '../../store/auth.store'
 
 function RegisterModal({ onClose, onSuccess }) {
     const [form, setForm] = useState({
@@ -44,25 +45,21 @@ function RegisterModal({ onClose, onSuccess }) {
                                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
                         </div>
                     </div>
-
                     <div>
                         <label className="block text-xs font-semibold text-gray-600 mb-1">DNI</label>
                         <input value={form.dni} onChange={e => set('dni', e.target.value)}
                             className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
                     </div>
-
                     <div>
                         <label className="block text-xs font-semibold text-gray-600 mb-1">Teléfono</label>
                         <input value={form.phone} onChange={e => set('phone', e.target.value)}
                             className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
                     </div>
-
                     <div>
                         <label className="block text-xs font-semibold text-gray-600 mb-1">Email *</label>
                         <input type="email" value={form.email} onChange={e => set('email', e.target.value)} required
                             className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
                     </div>
-
                     <div>
                         <label className="block text-xs font-semibold text-gray-600 mb-1">Contraseña *</label>
                         <input type="password" value={form.password} onChange={e => set('password', e.target.value)} required minLength={8}
@@ -92,23 +89,132 @@ function RegisterModal({ onClose, onSuccess }) {
     )
 }
 
+function EditModal({ patient, onClose, onSuccess }) {
+    const [form, setForm] = useState({
+        first_name: patient.first_name,
+        last_name: patient.last_name,
+        email: patient.email,
+        phone: patient.phone || '',
+        dni: patient.dni || '',
+    })
+    const [error, setError] = useState(null)
+    const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+    const mutation = useMutation({
+        mutationFn: (data) => api.patch(`/patients/${patient.id}`, data),
+        onSuccess: (res) => onSuccess(res.data.data),
+        onError: (err) => setError(err.response?.data?.error || 'Error al actualizar'),
+    })
+
+    function handleSubmit(e) {
+        e.preventDefault()
+        setError(null)
+        mutation.mutate(form)
+    }
+
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+                <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">Editar paciente</h3>
+                    <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors">×</button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-semibold text-gray-600 mb-1">Nombre *</label>
+                            <input value={form.first_name} onChange={e => set('first_name', e.target.value)} required
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-semibold text-gray-600 mb-1">Apellido *</label>
+                            <input value={form.last_name} onChange={e => set('last_name', e.target.value)} required
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">DNI</label>
+                        <input value={form.dni} onChange={e => set('dni', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Teléfono</label>
+                        <input value={form.phone} onChange={e => set('phone', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Email *</label>
+                        <input type="email" value={form.email} onChange={e => set('email', e.target.value)} required
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none" />
+                    </div>
+
+                    {error && (
+                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-sm text-red-600">{error}</p>
+                        </div>
+                    )}
+
+                    <div className="flex gap-3 pt-2">
+                        <button type="button" onClick={onClose}
+                            className="flex-1 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="submit" disabled={mutation.isPending}
+                            className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-xl text-sm font-semibold transition-colors">
+                            {mutation.isPending ? 'Guardando...' : 'Guardar'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    )
+}
+
 export default function Pacientes() {
     const queryClient = useQueryClient()
+    const { user } = useAuthStore()
+    const isAdmin = user?.role === 'admin'
     const [search, setSearch] = useState('')
-    const [showModal, setShowModal] = useState(false)
+    const [showRegisterModal, setShowRegisterModal] = useState(false)
+    const [editingPatient, setEditingPatient] = useState(null)
     const [successMsg, setSuccessMsg] = useState(null)
     const navigate = useNavigate()
+
     const { data: patients = [], isLoading } = useQuery({
         queryKey: ['patients', search],
         queryFn: () => api.get(`/patients${search ? `?search=${search}` : ''}`).then(r => r.data.data),
         staleTime: 30_000,
     })
 
-    function handleRegistered(patient) {
-        setShowModal(false)
-        setSuccessMsg(`${patient.first_name} ${patient.last_name} registrado correctamente`)
-        queryClient.invalidateQueries({ queryKey: ['patients'] })
+    const deleteMutation = useMutation({
+        mutationFn: (id) => api.delete(`/patients/${id}`),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['patients'] })
+            showSuccess('Paciente eliminado correctamente')
+        },
+    })
+
+    function showSuccess(msg) {
+        setSuccessMsg(msg)
         setTimeout(() => setSuccessMsg(null), 4000)
+    }
+
+    function handleRegistered(patient) {
+        setShowRegisterModal(false)
+        queryClient.invalidateQueries({ queryKey: ['patients'] })
+        showSuccess(`${patient.first_name} ${patient.last_name} registrado correctamente`)
+    }
+
+    function handleEdited(patient) {
+        setEditingPatient(null)
+        queryClient.invalidateQueries({ queryKey: ['patients'] })
+        showSuccess(`${patient.first_name} ${patient.last_name} actualizado correctamente`)
+    }
+
+    function handleDelete(patient) {
+        if (confirm(`¿Eliminar a ${patient.first_name} ${patient.last_name}? Esta acción no se puede deshacer.`))
+            deleteMutation.mutate(patient.id)
     }
 
     return (
@@ -129,7 +235,7 @@ export default function Pacientes() {
                     <p className="text-gray-500 mt-1">Busca o registra pacientes de la clínica</p>
                 </div>
                 <button
-                    onClick={() => setShowModal(true)}
+                    onClick={() => setShowRegisterModal(true)}
                     className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all flex items-center gap-2"
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,7 +282,7 @@ export default function Pacientes() {
                             {search ? 'No se encontraron pacientes' : 'No hay pacientes registrados'}
                         </p>
                         {!search && (
-                            <button onClick={() => setShowModal(true)}
+                            <button onClick={() => setShowRegisterModal(true)}
                                 className="mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium">
                                 Registrar el primero
                             </button>
@@ -186,7 +292,7 @@ export default function Pacientes() {
                     <table className="w-full">
                         <thead>
                             <tr className="bg-gray-50 border-b border-gray-200">
-                                {['Paciente', 'DNI', 'Teléfono', 'Email'].map(h => (
+                                {['Paciente', 'DNI', 'Teléfono', 'Email', 'Acciones'].map(h => (
                                     <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                         {h}
                                     </th>
@@ -207,6 +313,21 @@ export default function Pacientes() {
                                     <td className="px-6 py-4 text-sm text-gray-600">{p.dni || '—'}</td>
                                     <td className="px-6 py-4 text-sm text-gray-600">{p.phone || '—'}</td>
                                     <td className="px-6 py-4 text-sm text-gray-600">{p.email}</td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex gap-2">
+                                            <button onClick={() => setEditingPatient(p)}
+                                                className="px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
+                                                Editar
+                                            </button>
+                                            {isAdmin && (
+                                                <button onClick={() => handleDelete(p)}
+                                                    disabled={deleteMutation.isPending}
+                                                    className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50">
+                                                    Eliminar
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -214,10 +335,18 @@ export default function Pacientes() {
                 )}
             </div>
 
-            {showModal && (
+            {showRegisterModal && (
                 <RegisterModal
-                    onClose={() => setShowModal(false)}
+                    onClose={() => setShowRegisterModal(false)}
                     onSuccess={handleRegistered}
+                />
+            )}
+
+            {editingPatient && (
+                <EditModal
+                    patient={editingPatient}
+                    onClose={() => setEditingPatient(null)}
+                    onSuccess={handleEdited}
                 />
             )}
         </div>

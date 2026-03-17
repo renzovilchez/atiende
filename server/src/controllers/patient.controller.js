@@ -13,6 +13,7 @@ const createSchema = z.object({
 const updateSchema = z.object({
     first_name: z.string().min(1).max(100).optional(),
     last_name: z.string().min(1).max(100).optional(),
+    email: z.string().email().optional(),
     phone: z.string().max(30).optional(),
     dni: z.string().max(20).optional(),
 }).strict()
@@ -71,4 +72,11 @@ async function updateProfile(req, res, next) {
     } catch (err) { next(err) }
 }
 
-module.exports = { getAll, getById, create, update, getProfile, updateProfile }
+async function remove(req, res, next) {
+    try {
+        await patientService.remove(req.tenantId, req.params.id)
+        res.json({ success: true })
+    } catch (err) { next(err) }
+}
+
+module.exports = { getAll, getById, create, update, getProfile, updateProfile, remove }

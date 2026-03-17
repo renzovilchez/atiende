@@ -58,6 +58,12 @@ class PatientRepository {
             .returning('*')
         return profile
     }
+
+    async delete(id) {
+        await db('users')
+            .where({ id, tenant_id: this.tenantId, role: 'patient' })
+            .update({ is_active: false, updated_at: db.fn.now() })
+    }
 }
 
 module.exports = PatientRepository

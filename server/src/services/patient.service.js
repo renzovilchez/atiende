@@ -52,4 +52,11 @@ async function updateProfile(tenantId, userId, data) {
     return repo.upsertProfile(userId, data)
 }
 
-module.exports = { getAll, getById, create, update, getProfile, updateProfile }
+async function remove(tenantId, id) {
+    const repo = new PatientRepository(tenantId)
+    const patient = await repo.findById(id)
+    if (!patient) throw new AppError('Paciente no encontrado', 404)
+    await repo.delete(id)
+}
+
+module.exports = { getAll, getById, create, update, getProfile, updateProfile, remove }
