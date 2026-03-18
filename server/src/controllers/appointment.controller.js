@@ -1,5 +1,6 @@
 const { z } = require('zod')
 const appointmentService = require('../services/appointment.service')
+const { emitToTenant } = require('../utils/socket')
 
 const bookSchema = z.object({
     doctor_id: z.string().uuid(),
@@ -22,6 +23,7 @@ async function book(req, res, next) {
     try {
         const data = bookSchema.parse(req.body)
         const appointment = await appointmentService.book(req.tenantId, data, req.user.id, req.user.role)
+        emitToTenant(req.app.locals.io, req.tenantId, 'appointment:created', appointment)
         res.status(201).json({ success: true, data: appointment })
     } catch (err) { next(err) }
 }
@@ -36,6 +38,7 @@ async function getById(req, res, next) {
 async function confirm(req, res, next) {
     try {
         const appointment = await appointmentService.confirm(req.tenantId, req.params.id, req.user.id)
+        emitToTenant(req.app.locals.io, req.tenantId, 'appointment:updated', appointment)
         res.json({ success: true, data: appointment })
     } catch (err) { next(err) }
 }
@@ -43,6 +46,7 @@ async function confirm(req, res, next) {
 async function startProgress(req, res, next) {
     try {
         const appointment = await appointmentService.startProgress(req.tenantId, req.params.id, req.user.id)
+        emitToTenant(req.app.locals.io, req.tenantId, 'appointment:updated', appointment)
         res.json({ success: true, data: appointment })
     } catch (err) { next(err) }
 }
@@ -50,6 +54,7 @@ async function startProgress(req, res, next) {
 async function complete(req, res, next) {
     try {
         const appointment = await appointmentService.complete(req.tenantId, req.params.id, req.user.id)
+        emitToTenant(req.app.locals.io, req.tenantId, 'appointment:updated', appointment)
         res.json({ success: true, data: appointment })
     } catch (err) { next(err) }
 }
@@ -60,6 +65,7 @@ async function cancel(req, res, next) {
         const appointment = await appointmentService.cancel(
             req.tenantId, req.params.id, req.user.id, req.user.role, reason
         )
+        emitToTenant(req.app.locals.io, req.tenantId, 'appointment:cancelled', appointment)
         res.json({ success: true, data: appointment })
     } catch (err) { next(err) }
 }
@@ -68,6 +74,7 @@ async function reschedule(req, res, next) {
     try {
         const data = rescheduleSchema.parse(req.body)
         const appointment = await appointmentService.reschedule(req.tenantId, req.params.id, data, req.user.id)
+        emitToTenant(req.app.locals.io, req.tenantId, 'appointment:rescheduled', appointment)
         res.json({ success: true, data: appointment })
     } catch (err) { next(err) }
 }
@@ -101,7 +108,6 @@ async function getAvailability(req, res, next) {
 
 async function listMine(req, res, next) {
     try {
-        // authorize('patient') en la ruta ya garantiza el rol — check redundante eliminado
         const data = await appointmentService.listByPatient(req.tenantId, req.user.id)
         res.json({ success: true, data })
     } catch (err) { next(err) }
