@@ -1,119 +1,252 @@
-const { z } = require('zod')
-const appointmentService = require('../services/appointment.service')
-const { emitToTenant } = require('../utils/socket')
+const { z } = require("zod");
+const appointmentService = require("../services/appointment.service");
+const { emitToTenant } = require("../utils/socket");
+const { updateRoomCache, clearRoomCache } = require("../utils/roomCache");
 
 const bookSchema = z.object({
-    doctor_id: z.string().uuid(),
-    patient_id: z.string().uuid(),
-    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato YYYY-MM-DD requerido'),
-    notes: z.string().max(500).optional(),
-})
+  doctor_id: z.string().uuid(),
+  patient_id: z.string().uuid(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD requerido"),
+  notes: z.string().max(500).optional(),
+});
 
 const rescheduleSchema = z.object({
-    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-    doctor_id: z.string().uuid().optional(),
-    reason: z.string().max(500).optional(),
-})
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  doctor_id: z.string().uuid().optional(),
+  reason: z.string().max(500).optional(),
+});
 
 const cancelSchema = z.object({
-    reason: z.string().max(500).optional(),
-})
+  reason: z.string().max(500).optional(),
+});
 
 async function book(req, res, next) {
-    try {
-        const data = bookSchema.parse(req.body)
-        const appointment = await appointmentService.book(req.tenantId, data, req.user.id, req.user.role)
-        emitToTenant(req.app.locals.io, req.tenantId, 'appointment:created', appointment)
-        res.status(201).json({ success: true, data: appointment })
-    } catch (err) { next(err) }
+  try {
+    const data = bookSchema.parse(req.body);
+    const appointment = await appointmentService.book(
+      req.tenantId,
+      data,
+      req.user.id,
+      req.user.role,
+    );
+    emitToTenant(
+      req.app.locals.io,
+      req.tenantId,
+      "appointment:created",
+      appointment,
+    );
+    res.status(201).json({ success: true, data: appointment });
+  } catch (err) {
+    next(err);
+  }
 }
 
 async function getById(req, res, next) {
-    try {
-        const appointment = await appointmentService.getById(req.tenantId, req.params.id)
-        res.json({ success: true, data: appointment })
-    } catch (err) { next(err) }
+  try {
+    const appointment = await appointmentService.getById(
+      req.tenantId,
+      req.params.id,
+    );
+    res.json({ success: true, data: appointment });
+  } catch (err) {
+    next(err);
+  }
 }
 
 async function confirm(req, res, next) {
-    try {
-        const appointment = await appointmentService.confirm(req.tenantId, req.params.id, req.user.id)
-        emitToTenant(req.app.locals.io, req.tenantId, 'appointment:updated', appointment)
-        res.json({ success: true, data: appointment })
-    } catch (err) { next(err) }
+  try {
+    const appointment = await appointmentService.confirm(
+      req.tenantId,
+      req.params.id,
+      req.user.id,
+    );
+    emitToTenant(
+      req.app.locals.io,
+      req.tenantId,
+      "appointment:updated",
+      appointment,
+    );
+    res.json({ success: true, data: appointment });
+  } catch (err) {
+    next(err);
+  }
 }
 
 async function startProgress(req, res, next) {
-    try {
-        const appointment = await appointmentService.startProgress(req.tenantId, req.params.id, req.user.id)
-        emitToTenant(req.app.locals.io, req.tenantId, 'appointment:updated', appointment)
-        res.json({ success: true, data: appointment })
-    } catch (err) { next(err) }
+  try {
+    const appointment = await appointmentService.startProgress(
+      req.tenantId,
+      req.params.id,
+      req.user.id,
+    );
+    emitToTenant(
+      req.app.locals.io,
+      req.tenantId,
+      "appointment:updated",
+      appointment,
+    );
+
+    if (appointment.room_id) {
+      await updateRoomCache(req.tenantId, appointment.room_id, {
+        status: "occupied",
+        current_patient: `${appointment.patient_first_name} ${appointment.patient_last_name}`,
+      });
+      emitToTenant(req.app.locals.io, req.tenantId, "room:status_changed", {
+        room_id: appointment.room_id,
+        status: "occupied",
+        current_patient: `${appointment.patient_first_name} ${appointment.patient_last_name}`,
+      });
+    }
+
+    res.json({ success: true, data: appointment });
+  } catch (err) {
+    next(err);
+  }
 }
 
 async function complete(req, res, next) {
-    try {
-        const appointment = await appointmentService.complete(req.tenantId, req.params.id, req.user.id)
-        emitToTenant(req.app.locals.io, req.tenantId, 'appointment:updated', appointment)
-        res.json({ success: true, data: appointment })
-    } catch (err) { next(err) }
+  try {
+    const appointment = await appointmentService.complete(
+      req.tenantId,
+      req.params.id,
+      req.user.id,
+    );
+    emitToTenant(
+      req.app.locals.io,
+      req.tenantId,
+      "appointment:updated",
+      appointment,
+    );
+
+    if (appointment.room_id) {
+      await clearRoomCache(req.tenantId, appointment.room_id);
+      emitToTenant(req.app.locals.io, req.tenantId, "room:status_changed", {
+        room_id: appointment.room_id,
+        status: "available",
+        current_patient: null,
+      });
+    }
+
+    res.json({ success: true, data: appointment });
+  } catch (err) {
+    next(err);
+  }
 }
 
 async function cancel(req, res, next) {
-    try {
-        const { reason } = cancelSchema.parse(req.body)
-        const appointment = await appointmentService.cancel(
-            req.tenantId, req.params.id, req.user.id, req.user.role, reason
-        )
-        emitToTenant(req.app.locals.io, req.tenantId, 'appointment:cancelled', appointment)
-        res.json({ success: true, data: appointment })
-    } catch (err) { next(err) }
+  try {
+    const { reason } = cancelSchema.parse(req.body);
+    const appointment = await appointmentService.cancel(
+      req.tenantId,
+      req.params.id,
+      req.user.id,
+      req.user.role,
+      reason,
+    );
+    emitToTenant(
+      req.app.locals.io,
+      req.tenantId,
+      "appointment:cancelled",
+      appointment,
+    );
+    res.json({ success: true, data: appointment });
+  } catch (err) {
+    next(err);
+  }
 }
 
 async function reschedule(req, res, next) {
-    try {
-        const data = rescheduleSchema.parse(req.body)
-        const appointment = await appointmentService.reschedule(req.tenantId, req.params.id, data, req.user.id)
-        emitToTenant(req.app.locals.io, req.tenantId, 'appointment:rescheduled', appointment)
-        res.json({ success: true, data: appointment })
-    } catch (err) { next(err) }
+  try {
+    const data = rescheduleSchema.parse(req.body);
+    const appointment = await appointmentService.reschedule(
+      req.tenantId,
+      req.params.id,
+      data,
+      req.user.id,
+    );
+    emitToTenant(
+      req.app.locals.io,
+      req.tenantId,
+      "appointment:rescheduled",
+      appointment,
+    );
+    res.json({ success: true, data: appointment });
+  } catch (err) {
+    next(err);
+  }
 }
 
 async function listByDate(req, res, next) {
-    try {
-        const { date, doctor_id } = req.query
-        if (!date) return res.status(400).json({ success: false, error: 'date es requerido' })
-        const appointments = await appointmentService.listByDate(req.tenantId, date, doctor_id)
-        res.json({ success: true, data: appointments })
-    } catch (err) { next(err) }
+  try {
+    const { date, doctor_id } = req.query;
+    if (!date)
+      return res
+        .status(400)
+        .json({ success: false, error: "date es requerido" });
+    const appointments = await appointmentService.listByDate(
+      req.tenantId,
+      date,
+      doctor_id,
+    );
+    res.json({ success: true, data: appointments });
+  } catch (err) {
+    next(err);
+  }
 }
 
 async function getHistory(req, res, next) {
-    try {
-        const history = await appointmentService.getHistory(req.tenantId, req.params.id)
-        res.json({ success: true, data: history })
-    } catch (err) { next(err) }
+  try {
+    const history = await appointmentService.getHistory(
+      req.tenantId,
+      req.params.id,
+    );
+    res.json({ success: true, data: history });
+  } catch (err) {
+    next(err);
+  }
 }
 
 async function getAvailability(req, res, next) {
-    try {
-        const { doctor_id, date } = req.query
-        if (!doctor_id || !date) {
-            return res.status(400).json({ success: false, error: 'doctor_id y date son requeridos' })
-        }
-        const availability = await appointmentService.getAvailability(req.tenantId, doctor_id, date)
-        res.json({ success: true, data: availability })
-    } catch (err) { next(err) }
+  try {
+    const { doctor_id, date } = req.query;
+    if (!doctor_id || !date) {
+      return res
+        .status(400)
+        .json({ success: false, error: "doctor_id y date son requeridos" });
+    }
+    const availability = await appointmentService.getAvailability(
+      req.tenantId,
+      doctor_id,
+      date,
+    );
+    res.json({ success: true, data: availability });
+  } catch (err) {
+    next(err);
+  }
 }
 
 async function listMine(req, res, next) {
-    try {
-        const data = await appointmentService.listByPatient(req.tenantId, req.user.id)
-        res.json({ success: true, data })
-    } catch (err) { next(err) }
+  try {
+    const data = await appointmentService.listByPatient(
+      req.tenantId,
+      req.user.id,
+    );
+    res.json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
 }
 
 module.exports = {
-    book, getById, confirm, startProgress, complete,
-    cancel, reschedule, listByDate, getHistory, getAvailability, listMine
-}
+  book,
+  getById,
+  confirm,
+  startProgress,
+  complete,
+  cancel,
+  reschedule,
+  listByDate,
+  getHistory,
+  getAvailability,
+  listMine,
+};
