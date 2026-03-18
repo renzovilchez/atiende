@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import api from '../../api/axios'
 import StatusBadge from '../../components/StatusBadge'
+import { getSocket } from '../../hooks/useSocket'
 
 function today() {
     return new Date().toISOString().split('T')[0]
@@ -138,7 +139,7 @@ function HistoryModal({ appointment, onClose }) {
                     <div style={{ textAlign: 'center', color: '#94a3b8', padding: '20px' }}>Cargando...</div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {data?.map((event, i) => (
+                        {data?.map((event) => (
                             <div key={event.id} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2563eb', marginTop: '5px', flexShrink: 0 }} />
                                 <div>
@@ -174,6 +175,26 @@ export default function Recepcion() {
     })
 
     const invalidate = () => queryClient.invalidateQueries({ queryKey: ['appointments', date] })
+
+    // Socket — tiempo real
+    useEffect(() => {
+        const socket = getSocket()
+        if (!socket) return
+
+        const handleUpdate = () => queryClient.invalidateQueries({ queryKey: ['appointments', date] })
+
+        socket.on('appointment:created', handleUpdate)
+        socket.on('appointment:updated', handleUpdate)
+        socket.on('appointment:cancelled', handleUpdate)
+        socket.on('appointment:rescheduled', handleUpdate)
+
+        return () => {
+            socket.off('appointment:created', handleUpdate)
+            socket.off('appointment:updated', handleUpdate)
+            socket.off('appointment:cancelled', handleUpdate)
+            socket.off('appointment:rescheduled', handleUpdate)
+        }
+    }, [date, queryClient])
 
     const confirmMutation = useMutation({
         mutationFn: (id) => api.patch(`/appointments/${id}/confirm`),
