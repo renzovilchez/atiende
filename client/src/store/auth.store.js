@@ -1,45 +1,45 @@
-import { create } from 'zustand'
-import api from '../api/axios'
+import { create } from "zustand";
+import api from "../api/axios";
 
-let sessionChecked = false
+let sessionChecked = false;
 
 const useAuthStore = create((set) => ({
-    user: null,
-    isLoading: true,
+  user: null,
+  isLoading: true,
 
-    login: async (email, password) => {
-        const { data } = await api.post('/auth/login', { email, password })
-        window.__accessToken = data.data.accessToken
-        set({ user: data.data.user })
-    },
+  login: async (email, password) => {
+    const { data } = await api.post("/auth/login", { email, password });
+    window.__accessToken = data.data.accessToken;
+    set({ user: data.data.user });
+  },
 
-    logout: async () => {
-        try {
-            await api.post('/auth/logout')
-        } finally {
-            sessionChecked = false
-            window.__accessToken = null
-            set({ user: null })
-            window.location.href = '/login'
-        }
-    },
+  logout: async () => {
+    try {
+      await api.post("/auth/logout");
+    } finally {
+      sessionChecked = false;
+      window.__accessToken = null;
+      set({ user: null });
+      window.location.href = "/login";
+    }
+  },
 
-    checkSession: async () => {
-        if (sessionChecked) return
-        sessionChecked = true
+  checkSession: async () => {
+    if (sessionChecked) return;
+    sessionChecked = true;
 
-        try {
-            const { data } = await api.post('/auth/refresh')
-            window.__accessToken = data.data.accessToken
-            const me = await api.get('/auth/me')
-            set({ user: me.data.data.user })
-        } catch (err) {
-            window.__accessToken = null
-            set({ user: null })
-        } finally {
-            set({ isLoading: false })
-        }
-    },
-}))
+    try {
+      const { data } = await api.post("/auth/refresh");
+      window.__accessToken = data.data.accessToken;
+      const me = await api.get("/auth/me");
+      set({ user: me.data.data.user });
+    } catch (err) {
+      window.__accessToken = null;
+      set({ user: null });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+}));
 
-export default useAuthStore
+export default useAuthStore;
