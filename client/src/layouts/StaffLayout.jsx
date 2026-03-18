@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import useAuthStore from '../store/auth.store'
 import LiveClock from '../components/LiveClock'
+import { useSocket } from '../hooks/useSocket'
 
 // Iconos
 const MenuIcon = () => (
@@ -103,6 +104,7 @@ const NAV_ITEMS = {
 }
 
 export default function StaffLayout({ children }) {
+    useSocket()
     const { user, logout } = useAuthStore()
     const [sidebarOpen, setSidebarOpen] = useState(true)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
