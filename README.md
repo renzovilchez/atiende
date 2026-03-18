@@ -2,7 +2,7 @@
 
 Plataforma web multitenant de gestión de citas médicas para clínicas privadas.
 
-## Estado actual: Fase 2 — Agendamiento
+## Estado actual: Fase 3 — Tiempo real (Socket.io + Redis)
 
 ## Requisitos
 
@@ -29,17 +29,17 @@ curl http://localhost:4000/health
 
 ## Usuarios de prueba (password: `password123`)
 
-| Email | Rol | Clínica |
-|-------|-----|---------|
-| super@atiende.com | super_admin | — |
-| admin@sanmarcos.com | admin | Clínica San Marcos |
+| Email                   | Rol          | Clínica            |
+| ----------------------- | ------------ | ------------------ |
+| super@atiende.com       | super_admin  | —                  |
+| admin@sanmarcos.com     | admin        | Clínica San Marcos |
 | recepcion@sanmarcos.com | receptionist | Clínica San Marcos |
-| dr.garcia@sanmarcos.com | doctor | Clínica San Marcos |
-| dr.perez@sanmarcos.com | doctor | Clínica San Marcos |
-| paciente1@gmail.com | patient | Clínica San Marcos |
-| admin@vita.com | admin | Centro Médico Vita |
-| recepcion@vita.com | receptionist | Centro Médico Vita |
-| paciente2@gmail.com | patient | Centro Médico Vita |
+| dr.garcia@sanmarcos.com | doctor       | Clínica San Marcos |
+| dr.perez@sanmarcos.com  | doctor       | Clínica San Marcos |
+| paciente1@gmail.com     | patient      | Clínica San Marcos |
+| admin@vita.com          | admin        | Centro Médico Vita |
+| recepcion@vita.com      | receptionist | Centro Médico Vita |
+| paciente2@gmail.com     | patient      | Centro Médico Vita |
 
 ## Estructura
 
@@ -62,6 +62,7 @@ atiende/
 │   │   ├── api/
 │   │   ├── assets/
 │   │   ├── components/
+│   │   ├── hooks/
 │   │   ├── layouts/
 │   │   ├── pages/
 │   │   ├── router/
@@ -75,35 +76,30 @@ atiende/
 
 ## Fases
 
-| Fase | Semanas | Estado |
-|------|---------|--------|
-| 1 — Base multitenant + Auth | S1-S3 | ✅ Completada |
-| 2 — Agendamiento | S4-S6 | 🔄 En progreso |
-| 3 — Tiempo real (Socket.io) | S7-S9 | ⏳ Pendiente |
-| 4 — Canvas interactivo | S10-S12 | ⏳ Pendiente |
-| 5 — Microservicio IA | S13-S16 | ⏳ Pendiente |
-| 6 — Reportes y pulido | S17-S20 | ⏳ Pendiente |
+| Fase                        | Semanas | Estado         |
+| --------------------------- | ------- | -------------- |
+| 1 — Base multitenant + Auth | S1-S3   | ✅ Completada  |
+| 2 — Agendamiento            | S4-S6   | ✅ Completada  |
+| 3 — Tiempo real (Socket.io) | S7-S9   | ✅ Completada  |
+| 4 — Canvas interactivo      | S10-S12 | 🔄 En progreso |
+| 5 — Microservicio IA        | S13-S16 | ⏳ Pendiente   |
+| 6 — Reportes y pulido       | S17-S20 | ⏳ Pendiente   |
 
 ---
 
 ## Notas de desarrollo
 
-### Agregar una dependencia nueva a server
+### Agregar una dependencia nueva
 
 El `node_modules` vive en dos lugares: local (para el editor) y dentro del contenedor Docker (para el servidor). Hay que actualizar ambos.
 
 ```bash
-cd server
-npm install <paquete>                        # actualiza local + package.json
-docker-compose exec server npm install       # instala dentro del contenedor
-```
-
-No usar `--build` para dependencias — el caché de Docker lo bloquea. El `exec npm install` es más directo y siempre funciona.
-
-Para verificar que quedó instalada en el contenedor:
-
-```bash
-docker-compose exec server node -e "require('<paquete>'); console.log('ok')"
+cd server                                    # o cd client según corresponda
+npm install <paquete>                        # instala Y registra en package.json
+docker-compose down -v                       # baja contenedores y borra volúmenes (node_modules incluido)
+docker-compose up --build                    # reconstruye la imagen con el package.json actualizado
+docker-compose exec server npm run migrate   # ejecuta migraciones pendientes
+docker-compose exec server npm run seed      # ejecuta seeders pendientes
 ```
 
 ### Correr migraciones nuevas
