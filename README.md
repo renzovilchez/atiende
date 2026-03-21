@@ -2,7 +2,7 @@
 
 Plataforma web multitenant de gestión de citas médicas para clínicas privadas.
 
-## Estado actual: Fase 3 — Tiempo real (Socket.io + Redis)
+## Estado actual: Fase 4 — Canvas interactivo configurable
 
 ## Requisitos
 
@@ -81,8 +81,8 @@ atiende/
 | 1 — Base multitenant + Auth | S1-S3   | ✅ Completada  |
 | 2 — Agendamiento            | S4-S6   | ✅ Completada  |
 | 3 — Tiempo real (Socket.io) | S7-S9   | ✅ Completada  |
-| 4 — Canvas interactivo      | S10-S12 | 🔄 En progreso |
-| 5 — Microservicio IA        | S13-S16 | ⏳ Pendiente   |
+| 4 — Canvas interactivo      | S10-S12 | ✅ Completada  |
+| 5 — Microservicio IA        | S13-S16 | 🔄 En progreso |
 | 6 — Reportes y pulido       | S17-S20 | ⏳ Pendiente   |
 
 ---
