@@ -35,6 +35,18 @@ const NAV_CARDS = [
     desc: "Datos y configuración",
   },
   {
+    to: "/admin/plano",
+    emoji: "🟢",
+    title: "Plano en tiempo real",
+    desc: "Plano visual de la clínica",
+  },
+  {
+    to: "/admin/plano/configurar",
+    emoji: "🗺️",
+    title: "Configurar plano",
+    desc: "Configura pisos y consultorios",
+  },
+  {
     to: "/admin/reportes",
     emoji: "📊",
     title: "Reportes",
