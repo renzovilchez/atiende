@@ -5,10 +5,11 @@ async function updateRoomCache(tenantId, roomId, data) {
   await redis.hset(key, {
     status: data.status,
     current_patient: data.current_patient || "",
+    current_doctor: data.current_doctor || "",
     queue_count: String(data.queue_count || 0),
     updated_at: new Date().toISOString(),
   });
-  await redis.expire(key, 86400); // expira en 24h
+  await redis.expire(key, 86400);
 }
 
 async function clearRoomCache(tenantId, roomId) {
@@ -16,6 +17,7 @@ async function clearRoomCache(tenantId, roomId) {
   await redis.hset(key, {
     status: "available",
     current_patient: "",
+    current_doctor: "",
     queue_count: "0",
     updated_at: new Date().toISOString(),
   });

@@ -66,6 +66,21 @@ async function confirm(req, res, next) {
       "appointment:updated",
       appointment,
     );
+
+    if (appointment.room_id) {
+      await updateRoomCache(req.tenantId, appointment.room_id, {
+        status: "waiting",
+        current_patient: `${appointment.patient_first_name} ${appointment.patient_last_name}`,
+        current_doctor: `${appointment.doctor_first_name} ${appointment.doctor_last_name}`,
+      });
+      emitToTenant(req.app.locals.io, req.tenantId, "room:status_changed", {
+        room_id: appointment.room_id,
+        status: "waiting",
+        current_patient: `${appointment.patient_first_name} ${appointment.patient_last_name}`,
+        current_doctor: `${appointment.doctor_first_name} ${appointment.doctor_last_name}`,
+      });
+    }
+
     res.json({ success: true, data: appointment });
   } catch (err) {
     next(err);
@@ -90,11 +105,13 @@ async function startProgress(req, res, next) {
       await updateRoomCache(req.tenantId, appointment.room_id, {
         status: "occupied",
         current_patient: `${appointment.patient_first_name} ${appointment.patient_last_name}`,
+        current_doctor: `${appointment.doctor_first_name} ${appointment.doctor_last_name}`,
       });
       emitToTenant(req.app.locals.io, req.tenantId, "room:status_changed", {
         room_id: appointment.room_id,
         status: "occupied",
         current_patient: `${appointment.patient_first_name} ${appointment.patient_last_name}`,
+        current_doctor: `${appointment.doctor_first_name} ${appointment.doctor_last_name}`,
       });
     }
 

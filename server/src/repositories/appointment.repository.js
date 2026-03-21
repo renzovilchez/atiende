@@ -163,6 +163,25 @@ class AppointmentRepository {
       .first();
   }
 
+  // Obtiene una cita con todos los datos relacionados
+  async findByIdFull(id) {
+    return db("appointments as a")
+      .join("doctors as d", "d.id", "a.doctor_id")
+      .join("users as du", "du.id", "d.user_id")
+      .join("users as pu", "pu.id", "a.patient_id")
+      .leftJoin("rooms as r", "r.id", "a.room_id")
+      .where({ "a.id": id, "a.tenant_id": this.tenantId })
+      .select(
+        "a.*",
+        "du.first_name as doctor_first_name",
+        "du.last_name as doctor_last_name",
+        "pu.first_name as patient_first_name",
+        "pu.last_name as patient_last_name",
+        "r.name as room_name",
+      )
+      .first();
+  }
+
   // Transacción de agendamiento
   async bookTransaction(tenantId, data) {
     return db.transaction(async (trx) => {

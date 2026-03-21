@@ -76,20 +76,19 @@ async function confirm(tenantId, appointmentId, changedBy) {
   const repo = new AppointmentRepository(tenantId);
   const appointment = await repo.findById(appointmentId);
   if (!appointment) throw new AppError("Cita no encontrada", 404);
-  if (appointment.status !== "scheduled") {
+  if (appointment.status !== "scheduled")
     throw new AppError(
       `No se puede confirmar una cita en estado: ${appointment.status}`,
       400,
     );
-  }
-  const updated = await repo.update(appointmentId, { status: "confirmed" });
+  await repo.update(appointmentId, { status: "confirmed" });
   await repo.logEvent({
     appointmentId,
     fromStatus: "scheduled",
     toStatus: "confirmed",
     changedBy,
   });
-  return updated;
+  return repo.findByIdFull(appointmentId); // ← devuelve con JOINs
 }
 
 async function startProgress(tenantId, appointmentId, changedBy) {
@@ -97,20 +96,19 @@ async function startProgress(tenantId, appointmentId, changedBy) {
   const repo = new AppointmentRepository(tenantId);
   const appointment = await repo.findById(appointmentId);
   if (!appointment) throw new AppError("Cita no encontrada", 404);
-  if (appointment.status !== "confirmed") {
+  if (appointment.status !== "confirmed")
     throw new AppError(
       `No se puede iniciar una cita en estado: ${appointment.status}`,
       400,
     );
-  }
-  const updated = await repo.update(appointmentId, { status: "in_progress" });
+  await repo.update(appointmentId, { status: "in_progress" });
   await repo.logEvent({
     appointmentId,
     fromStatus: "confirmed",
     toStatus: "in_progress",
     changedBy,
   });
-  return updated;
+  return repo.findByIdFull(appointmentId);
 }
 
 async function complete(tenantId, appointmentId, changedBy) {
@@ -118,20 +116,19 @@ async function complete(tenantId, appointmentId, changedBy) {
   const repo = new AppointmentRepository(tenantId);
   const appointment = await repo.findById(appointmentId);
   if (!appointment) throw new AppError("Cita no encontrada", 404);
-  if (appointment.status !== "in_progress") {
+  if (appointment.status !== "in_progress")
     throw new AppError(
       `No se puede completar una cita en estado: ${appointment.status}`,
       400,
     );
-  }
-  const updated = await repo.update(appointmentId, { status: "completed" });
+  await repo.update(appointmentId, { status: "completed" });
   await repo.logEvent({
     appointmentId,
     fromStatus: "in_progress",
     toStatus: "completed",
     changedBy,
   });
-  return updated;
+  return repo.findByIdFull(appointmentId);
 }
 
 async function cancel(
