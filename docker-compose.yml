@@ -8,11 +8,11 @@ services:
       POSTGRES_USER: atiende
       POSTGRES_PASSWORD: atiende_secret
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ 'CMD-SHELL', 'pg_isready -U atiende -d atiende_dev' ]
+      test: ["CMD-SHELL", "pg_isready -U atiende -d atiende_dev"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -22,11 +22,11 @@ services:
     container_name: atiende_redis
     restart: unless-stopped
     ports:
-      - '6379:6379'
+      - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
-      test: [ 'CMD', 'redis-cli', 'ping' ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -38,7 +38,7 @@ services:
     container_name: atiende_server
     restart: unless-stopped
     ports:
-      - '4000:4000'
+      - "4000:4000"
     environment:
       NODE_ENV: development
       PORT: 4000
@@ -63,7 +63,7 @@ services:
     container_name: atiende_client
     restart: unless-stopped
     ports:
-      - '5173:5173'
+      - "5173:5173"
     volumes:
       - ./client:/app
       - /app/node_modules
@@ -71,10 +71,22 @@ services:
       - VITE_API_URL=http://localhost:4000/api
     depends_on:
       - server
-  # Descomentar cuando llegues a Fase 5
-  # ai:
-  #   build: ./ai
-  #   ports: ['8000:8000']
+  ai:
+    build:
+      context: ./ai
+      dockerfile: Dockerfile.dev
+    container_name: atiende_ai
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://atiende:atiende_secret@postgres:5432/atiende_dev
+    volumes:
+      - ./ai:/app
+      - ./ai/models:/app/models
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:
