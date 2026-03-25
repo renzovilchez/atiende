@@ -80,7 +80,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://atiende:atiende_secret@postgres:5432/atiende_dev
+      DATABASE_URL: postgresql://atiende:atiende_secret@postgres:5432/atiende_ai_dev
     volumes:
       - ./ai:/app
       - ./ai/models:/app/models
