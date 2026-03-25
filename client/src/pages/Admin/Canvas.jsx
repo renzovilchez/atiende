@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getMyLayout } from "../../api/layout.api";
 import { getRoomsStatus } from "../../api/rooms.api";
 import { getSocket } from "../../hooks/useSocket";
@@ -245,6 +245,7 @@ function Legend() {
 // ─── Página principal ─────────────────────────────────────────────────────────
 export default function AdminCanvas() {
   const navigate = useNavigate();
+  const { slug } = useParams();
   const { layout, statusMap, isLoading, isError } = useCanvasData();
   const [selectedFloorId, setSelectedFloorId] = useState(null);
   const [tooltip, setTooltip] = useState(null);
@@ -317,7 +318,7 @@ export default function AdminCanvas() {
         <div>
           <button
             onClick={() =>
-              navigate(user?.role === "admin" ? "/admin" : "/recepcion")
+              navigate(user?.role === "admin" ? `/${slug}/admin` : `/${slug}/recepcion`)
             }
             className="text-sm text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1"
           >
@@ -332,7 +333,7 @@ export default function AdminCanvas() {
         </div>
         {user?.role === "admin" && (
           <button
-            onClick={() => navigate("/admin/plano/configurar")}
+            onClick={() => navigate(`/${slug}/admin/plano/configurar`)}
             className="px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
           >
             ⚙️ Configurar plano
@@ -350,7 +351,7 @@ export default function AdminCanvas() {
             Configura los pisos y consultorios para ver el plano
           </p>
           <button
-            onClick={() => navigate("/admin/plano/configurar")}
+            onClick={() => navigate(`/${slug}/admin/plano/configurar`)}
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm"
           >
             Ir a configuración
@@ -400,7 +401,7 @@ export default function AdminCanvas() {
                     </p>
                     <button
                       onClick={() =>
-                        navigate(`/admin/plano/${currentFloor.id}/consultorios`)
+                        navigate(`/${slug}/admin/plano/configurar/${currentFloor.id}/consultorios`)
                       }
                       className="mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium"
                     >

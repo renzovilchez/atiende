@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { format, addDays, startOfWeek } from "date-fns";
 import { es } from "date-fns/locale";
 import api from "../../api/axios";
@@ -75,6 +75,7 @@ const ChevronRightIcon = () => (
 
 export default function DoctorAgenda() {
   const { user } = useAuthStore();
+  const { slug } = useParams();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [weekOffset, setWeekOffset] = useState(0);
 
@@ -179,7 +180,7 @@ export default function DoctorAgenda() {
           </p>
         </div>
         <Link
-          to="/"
+          to={`/${slug}/doctor`}
           className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
         >
           <HomeIcon />

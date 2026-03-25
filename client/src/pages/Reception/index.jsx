@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/axios";
 import StatusBadge from "../../components/StatusBadge";
 import { getSocket } from "../../hooks/useSocket";
@@ -392,6 +392,7 @@ function HistoryModal({ appointment, onClose }) {
 // ─── Página principal ──────────────────────────────────────────────────────
 export default function Recepcion() {
   const navigate = useNavigate();
+  const { slug } = useParams();
   const [date, setDate] = useState(today());
   const [cancelModal, setCancelModal] = useState(null);
   const [historyModal, setHistoryModal] = useState(null);
@@ -489,7 +490,7 @@ export default function Recepcion() {
         </div>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <button
-            onClick={() => navigate("/recepcion/pacientes")}
+            onClick={() => navigate(`/${slug}/recepcion/pacientes`)}
             style={{
               padding: "8px 14px",
               border: "1px solid #e2e8f0",
@@ -504,7 +505,7 @@ export default function Recepcion() {
             👤 Pacientes
           </button>
           <button
-            onClick={() => navigate("/recepcion/agendar")}
+            onClick={() => navigate(`/${slug}/recepcion/agendar`)}
             style={{
               padding: "8px 14px",
               border: "none",

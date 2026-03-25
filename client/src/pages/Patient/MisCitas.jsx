@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/axios";
 import StatusBadge from "../../components/StatusBadge";
 import { useEffect } from "react";
@@ -398,6 +398,7 @@ function CitaCard({ appt, onCancel, onHistory }) {
 
 export default function MisCitas() {
   const navigate = useNavigate();
+  const { slug } = useParams();
   const queryClient = useQueryClient();
   const [cancelModal, setCancelModal] = useState(null);
   const [historyModal, setHistoryModal] = useState(null);
@@ -472,7 +473,7 @@ export default function MisCitas() {
             </p>
           </div>
           <button
-            onClick={() => navigate("/agendar")}
+            onClick={() => navigate(`/${slug}/agendar`)}
             className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2 shadow-lg shadow-blue-200"
           >
             <svg
@@ -559,7 +560,7 @@ export default function MisCitas() {
           </p>
           {filter === "upcoming" && (
             <button
-              onClick={() => navigate("/agendar")}
+              onClick={() => navigate(`/${slug}/agendar`)}
               className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all"
             >
               Agendar una cita

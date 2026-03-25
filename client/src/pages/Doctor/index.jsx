@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import api from "../../api/axios";
 import useAuthStore from "../../store/auth.store";
 import StatusBadge from "../../components/StatusBadge";
@@ -73,6 +73,7 @@ const ArrowIcon = () => (
 
 export default function DoctorDashboard() {
   const { user } = useAuthStore();
+  const { slug } = useParams();
   const today = new Date().toISOString().split("T")[0];
 
   const queryClient = useQueryClient();
@@ -197,7 +198,7 @@ export default function DoctorDashboard() {
       {/* Accesos rápidos */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <Link
-          to="/doctor/cola"
+          to={`/${slug}/doctor/cola`}
           className="group bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-8 text-white hover:shadow-xl transition-all"
         >
           <h2 className="text-2xl font-bold mb-2">Mi cola de atención</h2>
@@ -211,7 +212,7 @@ export default function DoctorDashboard() {
         </Link>
 
         <Link
-          to="/doctor/agenda"
+          to={`/${slug}/doctor/agenda`}
           className="group bg-white border border-gray-200 rounded-2xl p-8 hover:shadow-xl transition-all"
         >
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Mi agenda</h2>

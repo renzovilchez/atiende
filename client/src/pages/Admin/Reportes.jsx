@@ -1,12 +1,13 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 export default function AdminReportes() {
     const navigate = useNavigate()
+    const { slug } = useParams()
 
     return (
         <div className="max-w-4xl mx-auto">
             <div className="mb-8">
-                <button onClick={() => navigate('/admin')} className="text-sm text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1">
+                <button onClick={() => navigate(`/${slug}/admin`)} className="text-sm text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1">
                     ← Volver
                 </button>
                 <h1 className="text-2xl font-bold text-gray-900">Reportes</h1>

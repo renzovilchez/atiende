@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/axios";
 
 function today() {
@@ -15,6 +15,7 @@ function addDays(date, days) {
 
 export default function RecepcionAgendar() {
   const navigate = useNavigate();
+  const { slug } = useParams();
   const [form, setForm] = useState({
     patient_id: "",
     specialty_id: "",
@@ -141,7 +142,7 @@ export default function RecepcionAgendar() {
             Nueva cita
           </button>
           <button
-            onClick={() => navigate("/recepcion")}
+            onClick={() => navigate(`/${slug}/recepcion`)}
             className="px-6 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-all"
           >
             Ver panel
@@ -156,7 +157,7 @@ export default function RecepcionAgendar() {
       {/* Header */}
       <div className="mb-8">
         <button
-          onClick={() => navigate("/recepcion")}
+          onClick={() => navigate(`/${slug}/recepcion`)}
           className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4 transition-colors"
         >
           <svg

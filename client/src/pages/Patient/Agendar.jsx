@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import api from '../../api/axios'
 import useAuthStore from '../../store/auth.store'
 
@@ -476,6 +476,7 @@ function StepConfirmar({ specialty, doctor, date, onBack, onConfirm, isPatient, 
 export default function Agendar() {
     const { user } = useAuthStore()
     const navigate = useNavigate()
+    const { slug } = useParams()
     const isPatient = user?.role === 'patient'
 
     const [step, setStep] = useState(1)
@@ -522,7 +523,7 @@ export default function Agendar() {
                         Agendar otra
                     </button>
                     <button
-                        onClick={() => navigate(isPatient ? '/mis-citas' : '/recepcion')}
+                        onClick={() => navigate(isPatient ? `/${slug}/mis-citas` : `/${slug}/recepcion`)}
                         className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-200 transition-all"
                     >
                         {isPatient ? 'Ver mis citas' : 'Ver panel'}

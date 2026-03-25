@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import api from '../../api/axios'
 
 const DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
@@ -118,6 +118,7 @@ function ScheduleModal({ schedule, doctorId, rooms, usedDays = [], onClose, onSu
 
 export default function AdminTurnos() {
     const navigate = useNavigate()
+    const { slug } = useParams()
     const queryClient = useQueryClient()
     const [selectedDoctor, setSelectedDoctor] = useState('')
     const [modal, setModal] = useState(null) // null | 'create' | schedule object
@@ -158,7 +159,7 @@ export default function AdminTurnos() {
     return (
         <div className="max-w-4xl mx-auto">
             <div className="mb-8">
-                <button onClick={() => navigate('/admin')} className="text-sm text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1">
+                <button onClick={() => navigate(`/${slug}/admin`)} className="text-sm text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1">
                     ← Volver
                 </button>
                 <h1 className="text-2xl font-bold text-gray-900">Turnos</h1>

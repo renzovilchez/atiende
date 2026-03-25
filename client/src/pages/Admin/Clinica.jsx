@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import api from '../../api/axios'
 
 export default function AdminClinica() {
     const navigate = useNavigate()
+    const { slug } = useParams()
     const [form, setForm] = useState({ name: '', ruc: '', phone: '', address: '', city: '' })
     const [success, setSuccess] = useState(false)
     const [error, setError] = useState(null)
@@ -50,7 +51,7 @@ export default function AdminClinica() {
     return (
         <div className="max-w-2xl mx-auto">
             <div className="mb-8">
-                <button onClick={() => navigate('/admin')} className="text-sm text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1">
+                <button onClick={() => navigate(`/${slug}/admin`)} className="text-sm text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1">
                     ← Volver
                 </button>
                 <h1 className="text-2xl font-bold text-gray-900">Mi clínica</h1>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import api from '../../api/axios'
 import useAuthStore from '../../store/auth.store'
 
@@ -180,6 +180,7 @@ export default function Pacientes() {
     const [editingPatient, setEditingPatient] = useState(null)
     const [successMsg, setSuccessMsg] = useState(null)
     const navigate = useNavigate()
+    const { slug } = useParams()
 
     const { data: patients = [], isLoading } = useQuery({
         queryKey: ['patients', search],
@@ -222,7 +223,7 @@ export default function Pacientes() {
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
                 <button
-                    onClick={() => navigate('/recepcion')}
+                    onClick={() => navigate(`/${slug}/recepcion`)}
                     className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4 transition-colors"
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

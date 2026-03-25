@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import api from '../../api/axios'
 
 function EspecialidadModal({ especialidad, onClose, onSuccess }) {
@@ -83,6 +83,7 @@ function EspecialidadModal({ especialidad, onClose, onSuccess }) {
 
 export default function AdminEspecialidades() {
     const navigate = useNavigate()
+    const { slug } = useParams()
     const queryClient = useQueryClient()
     const [modal, setModal] = useState(null)
 
@@ -100,7 +101,7 @@ export default function AdminEspecialidades() {
         <div className="max-w-4xl mx-auto">
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <button onClick={() => navigate('/admin')} className="text-sm text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1">
+                    <button onClick={() => navigate(`/${slug}/admin`)} className="text-sm text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1">
                         ← Volver
                     </button>
                     <h1 className="text-2xl font-bold text-gray-900">Especialidades</h1>

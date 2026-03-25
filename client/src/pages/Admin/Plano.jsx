@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   getFloors,
   createFloor,
@@ -143,6 +143,7 @@ function DeleteModal({ floor, onClose, onConfirm, isPending }) {
 // ─── Página principal ─────────────────────────────────────────────────────────
 export default function AdminPlano() {
   const navigate = useNavigate();
+  const { slug } = useParams();
   const queryClient = useQueryClient();
   const [modal, setModal] = useState(null); // null | 'create' | floor object
   const [deleting, setDeleting] = useState(null); // null | floor object
@@ -171,7 +172,7 @@ export default function AdminPlano() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <button
-            onClick={() => navigate("/admin")}
+            onClick={() => navigate(`/${slug}/admin`)}
             className="text-sm text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1"
           >
             ← Volver
@@ -261,7 +262,7 @@ export default function AdminPlano() {
                       <button
                         onClick={() =>
                           navigate(
-                            `/admin/plano/configurar/${floor.id}/consultorios`,
+                            `/${slug}/admin/plano/configurar/${floor.id}/consultorios`,
                           )
                         }
                         className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"

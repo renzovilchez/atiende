@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import api from "../../api/axios";
 import useAuthStore from "../../store/auth.store";
 import { getSocket } from "../../hooks/useSocket";
@@ -56,6 +56,7 @@ const NAV_CARDS = [
 
 export default function AdminDashboard() {
   const { user } = useAuthStore();
+  const { slug } = useParams();
   const queryClient = useQueryClient();
 
   const { data: appointments = [] } = useQuery({
@@ -155,7 +156,7 @@ export default function AdminDashboard() {
         {NAV_CARDS.map((card) => (
           <Link
             key={card.to}
-            to={card.to}
+            to={`/${slug}${card.to}`}
             className="group bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg hover:border-blue-200 transition-all"
           >
             <div className="text-4xl mb-4">{card.emoji}</div>

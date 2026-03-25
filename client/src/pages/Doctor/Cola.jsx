@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import api from "../../api/axios";
 import useAuthStore from "../../store/auth.store";
 import StatusBadge from "../../components/StatusBadge";
@@ -276,6 +276,7 @@ function PatientCard({ patient, onStart, onComplete, onHistory }) {
 // ─── Página principal ──────────────────────────────────────────────────────
 export default function DoctorCola() {
   const { user } = useAuthStore();
+  const { slug } = useParams();
   const queryClient = useQueryClient();
   const [historyModal, setHistoryModal] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -382,7 +383,7 @@ export default function DoctorCola() {
           </p>
         </div>
         <Link
-          to="/"
+          to={`/${slug}/doctor`}
           className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
         >
           <HomeIcon />

@@ -19,7 +19,7 @@ const STATUS_COLOR = {
 };
 
 export default function PlanoEditor() {
-  const { floorId } = useParams();
+  const { floorId, slug } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const canvasRef = useRef(null);
@@ -367,7 +367,7 @@ export default function PlanoEditor() {
         <div>
           <button
             onClick={() =>
-              navigate(`/admin/plano/configurar/${floorId}/consultorios`)
+              navigate(`/${slug}/admin/plano/configurar/${floorId}/consultorios`)
             }
             className="text-sm text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1"
           >
