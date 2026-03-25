@@ -1,8 +1,9 @@
 // layouts/PatientLayout.jsx
-import { NavLink, useNavigate, useLocation, useParams } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import useAuthStore from "../store/auth.store";
 import { useSocket } from "../hooks/useSocket";
+import { useTenantSlug } from "../hooks/useTenantSlug";
 
 // Iconos (los mismos)
 const CalendarIcon = () => (
@@ -106,7 +107,7 @@ export default function PatientLayout({ children }) {
   useSocket();
   const navigate = useNavigate();
   const location = useLocation();
-  const { slug } = useParams();
+  const slug = useTenantSlug();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);

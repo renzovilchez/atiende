@@ -1,9 +1,10 @@
 // layouts/StaffLayout.jsx
 import { useState, useEffect, memo } from "react";
-import { NavLink, useNavigate, useLocation, useParams } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import useAuthStore from "../store/auth.store";
 import LiveClock from "../components/LiveClock";
 import { useSocket } from "../hooks/useSocket";
+import { useTenantSlug } from "../hooks/useTenantSlug";
 
 // Iconos
 const MenuIcon = () => (
@@ -267,7 +268,7 @@ export default function StaffLayout({ children }) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { slug } = useParams();
+  const slug = useTenantSlug();
 
   useEffect(() => {
     const handleScroll = () => {
