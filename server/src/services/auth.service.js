@@ -1,8 +1,8 @@
-const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
-const crypto = require('crypto')
-const { AppError } = require('../middleware/error.middleware')
-const authRepository = require('../repositories/auth.repository')
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const { AppError } = require("../middleware/error.middleware");
+const authRepository = require("../repositories/auth.repository");
 
 function generateTokens(user) {
   const payload = {
@@ -13,27 +13,28 @@ function generateTokens(user) {
     firstName: user.first_name || null,
     lastName: user.last_name || null,
     tenantName: user.tenant_name || null,
-  }
+    tenantSlug: user.tenant_slug || null,
+  };
 
   const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '15m',
-  })
+    expiresIn: process.env.JWT_EXPIRES_IN || "15m",
+  });
 
-  const refreshToken = crypto.randomBytes(64).toString('hex')
+  const refreshToken = crypto.randomBytes(64).toString("hex");
 
-  return { accessToken, refreshToken }
+  return { accessToken, refreshToken };
 }
 
 async function login(email, password) {
-  const user = await authRepository.findActiveUserByEmail(email)
-  if (!user) throw new AppError('Credenciales inválidas', 401)
+  const user = await authRepository.findActiveUserByEmail(email);
+  if (!user) throw new AppError("Credenciales inválidas", 401);
 
-  const valid = await bcrypt.compare(password, user.password_hash)
-  if (!valid) throw new AppError('Credenciales inválidas', 401)
+  const valid = await bcrypt.compare(password, user.password_hash);
+  if (!valid) throw new AppError("Credenciales inválidas", 401);
 
-  const { accessToken, refreshToken } = generateTokens(user)
+  const { accessToken, refreshToken } = generateTokens(user);
 
-  await authRepository.saveRefreshToken(user.id, refreshToken)
+  await authRepository.saveRefreshToken(user.id, refreshToken);
 
   return {
     accessToken,
@@ -47,14 +48,15 @@ async function login(email, password) {
       tenantId: user.tenant_id,
       tenantName: user.tenant_name,
       tenantSlug: user.tenant_slug,
+      tenantSlug: user.tenant_slug,
     },
-  }
+  };
 }
 
 async function refreshAccessToken(refreshToken) {
-  const row = await authRepository.findRefreshToken(refreshToken)
-  if (!row) throw new AppError('Refresh token inválido o expirado', 401)
-  if (!row.is_active) throw new AppError('Usuario inactivo', 401)
+  const row = await authRepository.findRefreshToken(refreshToken);
+  if (!row) throw new AppError("Refresh token inválido o expirado", 401);
+  if (!row.is_active) throw new AppError("Usuario inactivo", 401);
 
   const { accessToken, refreshToken: newRefreshToken } = generateTokens({
     id: row.user_id,
@@ -64,16 +66,16 @@ async function refreshAccessToken(refreshToken) {
     first_name: row.first_name,
     last_name: row.last_name,
     tenant_name: row.tenant_name,
-  })
+  });
 
-  await authRepository.revokeRefreshToken(refreshToken)
-  await authRepository.saveRefreshToken(row.user_id, newRefreshToken)
+  await authRepository.revokeRefreshToken(refreshToken);
+  await authRepository.saveRefreshToken(row.user_id, newRefreshToken);
 
-  return { accessToken, refreshToken: newRefreshToken }
+  return { accessToken, refreshToken: newRefreshToken };
 }
 
 async function logout(refreshToken) {
-  await authRepository.revokeRefreshToken(refreshToken)
+  await authRepository.revokeRefreshToken(refreshToken);
 }
 
-module.exports = { login, refreshAccessToken, logout }
+module.exports = { login, refreshAccessToken, logout };
