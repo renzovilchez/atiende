@@ -1,6 +1,6 @@
 // layouts/StaffLayout.jsx
 import { useState, useEffect, memo } from "react";
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { NavLink, useNavigate, useLocation, useParams } from "react-router-dom";
 import useAuthStore from "../store/auth.store";
 import LiveClock from "../components/LiveClock";
 import { useSocket } from "../hooks/useSocket";
@@ -183,43 +183,43 @@ const QueueIcon = () => (
 );
 
 // Configuración de navegación por rol (basada en las rutas del router)
-const NAV_ITEMS = {
+const getNavItems = (slug) => ({
   receptionist: [
-    { to: "/recepcion", label: "Citas del día", icon: CalendarIcon, end: true },
-    { to: "/recepcion/agendar", label: "Agendar cita", icon: PlusIcon },
-    { to: "/recepcion/pacientes", label: "Pacientes", icon: UsersIcon },
-    { to: "/recepcion/plano", label: "Plano", icon: BuildingIcon },
+    { to: `/${slug}/recepcion`, label: "Citas del día", icon: CalendarIcon, end: true },
+    { to: `/${slug}/recepcion/agendar`, label: "Agendar cita", icon: PlusIcon },
+    { to: `/${slug}/recepcion/pacientes`, label: "Pacientes", icon: UsersIcon },
+    { to: `/${slug}/recepcion/plano`, label: "Plano", icon: BuildingIcon },
   ],
   doctor: [
-    { to: "/doctor", label: "Dashboard", icon: DashboardIcon, end: true },
-    { to: "/doctor/cola", label: "Cola de espera", icon: QueueIcon },
-    { to: "/doctor/agenda", label: "Mi agenda", icon: CalendarIcon },
+    { to: `/${slug}/doctor`, label: "Dashboard", icon: DashboardIcon, end: true },
+    { to: `/${slug}/doctor/cola`, label: "Cola de espera", icon: QueueIcon },
+    { to: `/${slug}/doctor/agenda`, label: "Mi agenda", icon: CalendarIcon },
   ],
   admin: [
-    { to: "/admin", label: "Dashboard", icon: DashboardIcon, end: true },
-    { to: "/recepcion", label: "Citas del día", icon: CalendarIcon, end: true },
-    { to: "/recepcion/agendar", label: "Agendar cita", icon: PlusIcon },
-    { to: "/recepcion/pacientes", label: "Pacientes", icon: UsersIcon },
-    { to: "/admin/doctores", label: "Doctores", icon: UsersIcon },
+    { to: `/${slug}/admin`, label: "Dashboard", icon: DashboardIcon, end: true },
+    { to: `/${slug}/recepcion`, label: "Citas del día", icon: CalendarIcon, end: true },
+    { to: `/${slug}/recepcion/agendar`, label: "Agendar cita", icon: PlusIcon },
+    { to: `/${slug}/recepcion/pacientes`, label: "Pacientes", icon: UsersIcon },
+    { to: `/${slug}/admin/doctores`, label: "Doctores", icon: UsersIcon },
     {
-      to: "/admin/especialidades",
+      to: `/${slug}/admin/especialidades`,
       label: "Especialidades",
       icon: SpecialtiesIcon,
     },
-    { to: "/admin/turnos", label: "Turnos", icon: CalendarIcon },
-    { to: "/admin/clinica", label: "Mi clínica", icon: BuildingIcon },
+    { to: `/${slug}/admin/turnos`, label: "Turnos", icon: CalendarIcon },
+    { to: `/${slug}/admin/clinica`, label: "Mi clínica", icon: BuildingIcon },
     {
-      to: "/admin/plano",
+      to: `/${slug}/admin/plano`,
       label: "Plano en tiempo real",
       icon: BuildingIcon,
       end: true,
     },
     {
-      to: "/admin/plano/configurar",
+      to: `/${slug}/admin/plano/configurar`,
       label: "Configurar plano",
       icon: BuildingIcon,
     },
-    { to: "/admin/reportes", label: "Reportes", icon: ReportsIcon },
+    { to: `/${slug}/admin/reportes`, label: "Reportes", icon: ReportsIcon },
   ],
   super_admin: [
     { to: "/super-admin", label: "Dashboard", icon: DashboardIcon, end: true },
@@ -227,7 +227,7 @@ const NAV_ITEMS = {
     { to: "/super-admin/planes", label: "Planes", icon: SpecialtiesIcon },
     { to: "/super-admin/metricas", label: "Métricas", icon: ReportsIcon },
   ],
-};
+});
 
 const StaffHeader = memo(function StaffHeader({ scrolled, onMobileMenuOpen }) {
   return (
@@ -267,6 +267,7 @@ export default function StaffLayout({ children }) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { slug } = useParams();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -281,7 +282,7 @@ export default function StaffLayout({ children }) {
     setMobileMenuOpen(false);
   }, [location]);
 
-  const navItems = NAV_ITEMS[user?.role] || [];
+  const navItems = getNavItems(slug)[user?.role] || [];
 
   async function handleLogout() {
     setIsLoggingOut(true);

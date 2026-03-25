@@ -1,5 +1,5 @@
 // layouts/PatientLayout.jsx
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { NavLink, useNavigate, useLocation, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import useAuthStore from "../store/auth.store";
 import { useSocket } from "../hooks/useSocket";
@@ -106,6 +106,7 @@ export default function PatientLayout({ children }) {
   useSocket();
   const navigate = useNavigate();
   const location = useLocation();
+  const { slug } = useParams();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -132,9 +133,9 @@ export default function PatientLayout({ children }) {
   // Rutas específicas para paciente
   const patientNavItems = [
     { to: "/", label: "Inicio", icon: HomeIcon, end: true },
-    { to: "/mis-citas", label: "Mis citas", icon: CalendarIcon },
-    { to: "/agendar", label: "Agendar cita", icon: PlusIcon, highlight: true },
-    { to: "/historial", label: "Historial", icon: HistoryIcon },
+    { to: `/${slug}/mis-citas`, label: "Mis citas", icon: CalendarIcon },
+    { to: `/${slug}/agendar`, label: "Agendar cita", icon: PlusIcon, highlight: true },
+    { to: `/${slug}/historial`, label: "Historial", icon: HistoryIcon },
   ];
 
   return (
