@@ -4,6 +4,15 @@ from src.predict import router as predict_router
 from src.train import start_scheduler
 import os
 
+# Configuración de CORS basada en ENVIRONMENT
+ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
+
+if ENVIRONMENT == "development":
+    ALLOWED_ORIGINS = ["*"]
+else:
+    # Producción o cualquier otro valor: solo server Node local
+    ALLOWED_ORIGINS = ["http://localhost:4000"]
+
 app = FastAPI(
     title="ATIENDE AI Service",
     description="Microservicio de predicción de demanda para citas médicas",
@@ -13,7 +22,7 @@ app = FastAPI(
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En producción, especificar dominios
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
