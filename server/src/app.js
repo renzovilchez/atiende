@@ -35,6 +35,7 @@ app.use("/api/schedules", require("./routes/schedule.routes"));
 app.use("/api/patients", require("./routes/patient.routes"));
 app.use("/api/rooms", require("./routes/rooms.routes"));
 app.use("/api/floors", require("./routes/floor.routes"));
+app.use("/api/predict", require("./routes/predict.routes"));
 
 app.use(errorHandler);
 
