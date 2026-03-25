@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import api from "../../api/axios";
 import useAuthStore from "../../store/auth.store";
+import { useTenantSlug } from "../../hooks/useTenantSlug";
 import { getSocket } from "../../hooks/useSocket";
 
 function today() {
@@ -56,7 +57,7 @@ const NAV_CARDS = [
 
 export default function AdminDashboard() {
   const { user } = useAuthStore();
-  const { slug } = useParams();
+  const slug = useTenantSlug();
   const queryClient = useQueryClient();
 
   const { data: appointments = [] } = useQuery({

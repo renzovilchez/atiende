@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import StatusBadge from "../../components/StatusBadge";
 import { useEffect } from "react";
 import { getSocket } from "../../hooks/useSocket";
+import { useTenantSlug } from "../../hooks/useTenantSlug";
 
 // Iconos como componentes (puedes reemplazar con lucide-react)
 const CalendarIcon = () => (
@@ -398,7 +399,7 @@ function CitaCard({ appt, onCancel, onHistory }) {
 
 export default function MisCitas() {
   const navigate = useNavigate();
-  const { slug } = useParams();
+  const slug = useTenantSlug();
   const queryClient = useQueryClient();
   const [cancelModal, setCancelModal] = useState(null);
   const [historyModal, setHistoryModal] = useState(null);

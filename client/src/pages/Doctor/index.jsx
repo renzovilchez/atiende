@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import api from "../../api/axios";
 import useAuthStore from "../../store/auth.store";
+import { useTenantSlug } from "../../hooks/useTenantSlug";
 import StatusBadge from "../../components/StatusBadge";
 import { getSocket } from "../../hooks/useSocket";
 
@@ -73,7 +74,7 @@ const ArrowIcon = () => (
 
 export default function DoctorDashboard() {
   const { user } = useAuthStore();
-  const { slug } = useParams();
+  const slug = useTenantSlug();
   const today = new Date().toISOString().split("T")[0];
 
   const queryClient = useQueryClient();

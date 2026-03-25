@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import api from "../../api/axios";
 import useAuthStore from "../../store/auth.store";
 import StatusBadge from "../../components/StatusBadge";
 import { getSocket } from "../../hooks/useSocket";
+import { useTenantSlug } from "../../hooks/useTenantSlug";
 
 // ─── Iconos ────────────────────────────────────────────────────────────────
 const PlayIcon = () => (
@@ -276,7 +277,7 @@ function PatientCard({ patient, onStart, onComplete, onHistory }) {
 // ─── Página principal ──────────────────────────────────────────────────────
 export default function DoctorCola() {
   const { user } = useAuthStore();
-  const { slug } = useParams();
+  const slug = useTenantSlug();
   const queryClient = useQueryClient();
   const [historyModal, setHistoryModal] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);

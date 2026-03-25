@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   getFloors,
   createFloor,
   updateFloor,
   deleteFloor,
 } from "../../api/floors.api";
+import { useTenantSlug } from "../../hooks/useTenantSlug";
 
 // ─── Modal crear/editar piso ──────────────────────────────────────────────────
 function FloorModal({ floor, onClose, onSuccess }) {
@@ -143,7 +144,7 @@ function DeleteModal({ floor, onClose, onConfirm, isPending }) {
 // ─── Página principal ─────────────────────────────────────────────────────────
 export default function AdminPlano() {
   const navigate = useNavigate();
-  const { slug } = useParams();
+  const slug = useTenantSlug();
   const queryClient = useQueryClient();
   const [modal, setModal] = useState(null); // null | 'create' | floor object
   const [deleting, setDeleting] = useState(null); // null | floor object

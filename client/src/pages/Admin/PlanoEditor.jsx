@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { getRooms, updateRoomPosition } from "../../api/rooms.api";
 import { getFloors } from "../../api/floors.api";
+import { useTenantSlug } from "../../hooks/useTenantSlug";
 
 const CANVAS_H = 600;
 const GRID = 20;
@@ -19,7 +20,8 @@ const STATUS_COLOR = {
 };
 
 export default function PlanoEditor() {
-  const { floorId, slug } = useParams();
+  const { floorId } = useParams();
+  const slug = useTenantSlug();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const canvasRef = useRef(null);
@@ -367,7 +369,9 @@ export default function PlanoEditor() {
         <div>
           <button
             onClick={() =>
-              navigate(`/${slug}/admin/plano/configurar/${floorId}/consultorios`)
+              navigate(
+                `/${slug}/admin/plano/configurar/${floorId}/consultorios`,
+              )
             }
             className="text-sm text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1"
           >

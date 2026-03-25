@@ -8,6 +8,7 @@ import {
   deleteRoom,
 } from "../../api/rooms.api";
 import { getFloors } from "../../api/floors.api";
+import { useTenantSlug } from "../../hooks/useTenantSlug";
 
 // ─── Modal crear/editar consultorio ──────────────────────────────────────────
 function RoomModal({ room, floorId, onClose, onSuccess }) {
@@ -221,7 +222,8 @@ function DeleteModal({ room, onClose, onConfirm, isPending }) {
 
 // ─── Página principal ─────────────────────────────────────────────────────────
 export default function AdminConsultorios() {
-  const { floorId, slug } = useParams();
+  const { floorId } = useParams();
+  const slug = useTenantSlug();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [modal, setModal] = useState(null); // null | 'create' | room object
@@ -286,7 +288,9 @@ export default function AdminConsultorios() {
                 <button
                   key={floor.id}
                   onClick={() =>
-                    navigate(`/${slug}/admin/plano/configurar/${floor.id}/consultorios`)
+                    navigate(
+                      `/${slug}/admin/plano/configurar/${floor.id}/consultorios`,
+                    )
                   }
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                     String(floor.id) === String(floorId)
@@ -301,7 +305,9 @@ export default function AdminConsultorios() {
           )}
         </div>
         <button
-          onClick={() => navigate(`/${slug}/admin/plano/configurar/${floorId}/editor`)}
+          onClick={() =>
+            navigate(`/${slug}/admin/plano/configurar/${floorId}/editor`)
+          }
           className="px-5 py-2.5 border border-gray-200 hover:bg-gray-50 text-gray-600 font-semibold rounded-xl transition-all flex items-center gap-2"
         >
           🗺️ Editor visual

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useTenantSlug } from "../../hooks/useTenantSlug";
 import { getMyLayout } from "../../api/layout.api";
 import { getRoomsStatus } from "../../api/rooms.api";
 import { getSocket } from "../../hooks/useSocket";
@@ -245,7 +246,7 @@ function Legend() {
 // ─── Página principal ─────────────────────────────────────────────────────────
 export default function AdminCanvas() {
   const navigate = useNavigate();
-  const { slug } = useParams();
+  const slug = useTenantSlug();
   const { layout, statusMap, isLoading, isError } = useCanvasData();
   const [selectedFloorId, setSelectedFloorId] = useState(null);
   const [tooltip, setTooltip] = useState(null);
@@ -318,7 +319,11 @@ export default function AdminCanvas() {
         <div>
           <button
             onClick={() =>
-              navigate(user?.role === "admin" ? `/${slug}/admin` : `/${slug}/recepcion`)
+              navigate(
+                user?.role === "admin"
+                  ? `/${slug}/admin`
+                  : `/${slug}/recepcion`,
+              )
             }
             className="text-sm text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1"
           >
@@ -401,7 +406,9 @@ export default function AdminCanvas() {
                     </p>
                     <button
                       onClick={() =>
-                        navigate(`/${slug}/admin/plano/configurar/${currentFloor.id}/consultorios`)
+                        navigate(
+                          `/${slug}/admin/plano/configurar/${currentFloor.id}/consultorios`,
+                        )
                       }
                       className="mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium"
                     >

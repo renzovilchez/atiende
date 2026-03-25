@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
+import { useTenantSlug } from "../../hooks/useTenantSlug";
 
 function today() {
   return new Date().toISOString().split("T")[0];
@@ -15,7 +16,7 @@ function addDays(date, days) {
 
 export default function RecepcionAgendar() {
   const navigate = useNavigate();
-  const { slug } = useParams();
+  const slug = useTenantSlug();
   const [form, setForm] = useState({
     patient_id: "",
     specialty_id: "",
